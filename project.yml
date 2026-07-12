@@ -2,7 +2,7 @@ name: Lighthouse
 options:
   bundleIdPrefix: com.blockbase
   deploymentTarget:
-    iOS: "17.0"
+    iOS: "18.0"
   xcodeVersion: "16.0"
   createIntermediateGroups: true
 settings:
@@ -16,7 +16,9 @@ targets:
     type: application
     platform: iOS
     sources:
-      - Lighthouse
+      - path: Lighthouse
+        excludes:
+          - "**/.DS_Store"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.blockbase.lighthouse
@@ -27,6 +29,11 @@ targets:
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+        INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: Lighthouse uses your location to geotag incidents and route SOS help near you.
+        INFOPLIST_KEY_NSMicrophoneUsageDescription: Lighthouse needs the microphone so you can report emergencies by voice.
+        INFOPLIST_KEY_NSSpeechRecognitionUsageDescription: Lighthouse converts your spoken reports into text for the offline agent.
+        INFOPLIST_KEY_NSCameraUsageDescription: Lighthouse can attach field photos to incident reports.
+        INFOPLIST_KEY_NSPhotoLibraryUsageDescription: Lighthouse can import field photos for OCR and incident records.
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
     scheme:

@@ -4,8 +4,6 @@
 
 > **Help when you need it. Works offline.**
 
-SwiftUI port of [lighthouse-android](https://github.com/chaalpritam/lighthouse-android) — same mission agent, SOS routing, and offline-first design, built for Apple platforms.
-
 ---
 
 # Overview
@@ -14,7 +12,7 @@ Lighthouse is an **offline-first emergency assistant** for anyone in a crisis �
 
 Under the hood it runs a **local agent** (on-device **rules engine**): it remembers incidents, geotags reports, routes SOS to the right teams, detects contradictions, and speaks responses aloud — **without cloud AI**.
 
-Originally built for the **Google DeepMind Bangalore Hackathon – Best Use of Gemma 4: Local-First Agents**, and designed so **anyone** can use it in an emergency.
+Built for the **Google DeepMind Bangalore Hackathon – Best Use of Gemma 4: Local-First Agents**, and designed so **anyone** can use it in an emergency.
 
 ---
 
@@ -119,7 +117,7 @@ Power-user / demo view with:
 * Mission stats grid  
 * Agent briefing and plan steps  
 * Incident cards and recent timeline  
-* **Play** judge demo (scripted Chennai earthquake scenario)  
+* **Play** demo (scripted Chennai earthquake scenario)  
 
 ## Offline Mission Management
 
@@ -148,7 +146,7 @@ Query by voice or text:
 
 ## Peer Sync
 
-**Settings → Export / Import mission JSON** — snapshot schema **v1**, compatible with the Android app for offline peer handoff.
+**Settings → Export / Import mission JSON** — offline mission snapshot schema **v1** for sharing between devices.
 
 ---
 
@@ -158,7 +156,7 @@ Built for Apple’s latest system look:
 
 * iOS 18+ `Tab` API, large titles, and NavigationStack  
 * **Liquid Glass–inspired** materials (`.ultraThinMaterial`, specular strokes, capsule voice dock)  
-* System blue / priority colors aligned with the Android iOS-style palette  
+* System blue and priority colors for incident severity  
 * When built with **Xcode 26 / iOS 26**, standard controls pick up **Liquid Glass** automatically  
 
 ---
@@ -177,17 +175,6 @@ Built for Apple’s latest system look:
 | OCR | Vision (`VNRecognizeTextRequest`) |
 | Agent | On-device rules engine (parser, planner, SOS, recovery) |
 | Project | [XcodeGen](https://github.com/yonaskolb/XcodeGen) |
-
-### Android parity notes
-
-| Android | iOS |
-| ------- | --- |
-| Room | SwiftData |
-| Google Maps (optional key) | MapKit |
-| SpeechRecognizer + TTS | SFSpeechRecognizer + AVSpeechSynthesizer |
-| ML Kit OCR | Vision |
-| Gemma 4 via LiteRT-LM | Rules engine (full offline parity); Gemma LiteRT is Android-only |
-| Jetpack Compose | SwiftUI |
 
 ---
 
@@ -260,7 +247,7 @@ On first launch the app requests:
 1. **Welcome** — tagline and feature overview  
 2. **How it helps** — Sense → Decide → Act → Verify → Recover  
 3. **Permissions** — enable mic (required), location (recommended); optional voice test  
-4. **Optional AI** — brain / variant status (rules engine on iOS)  
+4. **Optional AI** — brain / variant status  
 5. **Ready** — **Get started** creates an emergency mission at your GPS  
 
 Advanced: custom mission name / disaster type / location, or pick a regional preset.
@@ -271,15 +258,14 @@ After **Reset** in Settings (clears SwiftData + `captures/`), onboarding appears
 
 # Agent Brain
 
-* iOS runs the **offline rules engine** by default — full feature parity for parse, plan, SOS, contradictions, and queries.  
-* **Gemma 4 LiteRT** models (E2B / E4B) are Android-specific; Settings still shows variant labels for cross-platform UI parity.  
-* The bottom **status bar** shows the active brain mode (rules vs noted Gemma variants).  
+* Lighthouse runs an **offline rules engine** — parse, plan, SOS, contradictions, and queries all work without the network.  
+* The bottom **status bar** shows the active brain mode.  
 
 ---
 
 # Demo (Guide → Play)
 
-Scripted walkthrough used for demos / judging:
+Scripted walkthrough:
 
 1. Critical collapse report (children trapped)  
 2. Unconscious victim update  
@@ -287,10 +273,3 @@ Scripted walkthrough used for demos / judging:
 4. Blocked road  
 5. Rescue logged  
 6. Critical-incident query  
-
----
-
-# License / Related
-
-* Android app: [chaalpritam/lighthouse-android](https://github.com/chaalpritam/lighthouse-android)  
-* iOS app: [chaalpritam/lighthouse-ios](https://github.com/chaalpritam/lighthouse-ios)  

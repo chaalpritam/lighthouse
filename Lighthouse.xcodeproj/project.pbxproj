@@ -7,16 +7,68 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1BEC60FA039668828DF2AA2D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4A47ADDB99E959DB636AFFF /* ContentView.swift */; };
+		32F577C54860D03DEE651618 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA8F976A729D6A8190AF3E7 /* SettingsView.swift */; };
+		348D163776D88A76DEB3067E /* MissionSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EDD5BA83DCCAE85B3D7C5AA /* MissionSync.swift */; };
+		3DA4E3552EDED9A8153E50A9 /* MissionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AC787142C7094BDDCB1DCD8 /* MissionViewModel.swift */; };
+		3F8F7FF8E8A2F899FAABEA27 /* MissionPlanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5298CCBF8EB17CB6C54FA46 /* MissionPlanner.swift */; };
+		50B25ABA756952BD512883D5 /* LighthouseAgent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CECDE098C8A720E228B81A2 /* LighthouseAgent.swift */; };
+		5451BBED680BA1CB24709E13 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E2E267690BD529A64BADA8B /* OnboardingView.swift */; };
 		571C3A97429779D3113E53C3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0265B5AA795BABA2208B6FC4 /* Assets.xcassets */; };
+		5D331CC18F95E1D4848CAD16 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02B34A0E01E74921036D7177 /* DesignSystem.swift */; };
+		6644D6818E2E44885B6006D3 /* GuideConsoleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D91D8F885DE2CF5A6825374 /* GuideConsoleView.swift */; };
+		694388710DAAE34D2791F783 /* AgentTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 048DAC2A6D4E35267B777D83 /* AgentTypes.swift */; };
+		6FE172A71719D34DF7A1912A /* EmergencyAgent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C38131C9608D58D1F760F9C /* EmergencyAgent.swift */; };
+		758420312FCB5F967B155DD6 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A37C9C62D166E240221AEC82 /* MainTabView.swift */; };
+		7F6653FB4B43485EBF06FE08 /* DemoRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = C39F703659C6C204FDA8FD0E /* DemoRunner.swift */; };
+		8BC714505852CABC3434D21A /* SupportModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E36E04B1CEE18A5FF52D9E8 /* SupportModels.swift */; };
+		9BC59876982EF85A2B423749 /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE05DAAA95C3450B4789DE27 /* LocationService.swift */; };
+		A0BD2FE59E6C86B62B3F6BDC /* AgentBrainStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FDC2428610F0648141DEFB6 /* AgentBrainStatus.swift */; };
 		A93244B894C64949B8F8A4E1 /* LighthouseApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E60958BD4B95F89C190661F /* LighthouseApp.swift */; };
+		B5E4C93E925F93C5F7CB15B9 /* LocationResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DFF9DA9EF4798C8DC7AC871 /* LocationResolver.swift */; };
+		C3349FF4F1327A250A12951B /* HomeMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D6FFA9ECD87D491B411F28 /* HomeMapView.swift */; };
+		C514853AE94E4AB082C7A93B /* SharedComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00563C6BCED24176FE71130 /* SharedComponents.swift */; };
+		CB6280284483F40FD709E4DF /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AAE731AF8093B5669C2EF1D /* RootView.swift */; };
+		CC03A4B8A757AC67FD89A011 /* MissionModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60AFB62D41650013DDF1B90 /* MissionModels.swift */; };
+		D4C3973A0EFC788086988ACC /* MissionRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7637EE1CA57B2C29EEACD278 /* MissionRepository.swift */; };
+		E17F56A1FF07C83D9C77AB63 /* AgentOrchestrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E79DC9A85AE7CDDB0C6F4FE2 /* AgentOrchestrator.swift */; };
+		E500E72B2BF7CFD9EA5DB86A /* ActivityLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27CA0CA5C3E499C09378A972 /* ActivityLogView.swift */; };
+		F2B8E61634707BEB8EA59472 /* FieldCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A7B829654AB658B540065CB /* FieldCaptureService.swift */; };
+		FF6C504E08E3CD8206FF09F2 /* VoiceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C415CC300B8BAC5144AE0E18 /* VoiceService.swift */; };
+		FF97704BB5E459B3E191F575 /* ReportParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E1D725624E35517407FBCFC /* ReportParser.swift */; };
+		FFDEBEDE539AA2887C6CF0B2 /* AgentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9643BFF4E38B491158FA8AFE /* AgentsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		0265B5AA795BABA2208B6FC4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		02B34A0E01E74921036D7177 /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
+		048DAC2A6D4E35267B777D83 /* AgentTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentTypes.swift; sourceTree = "<group>"; };
+		0CECDE098C8A720E228B81A2 /* LighthouseAgent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LighthouseAgent.swift; sourceTree = "<group>"; };
+		0DFF9DA9EF4798C8DC7AC871 /* LocationResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationResolver.swift; sourceTree = "<group>"; };
+		1EDD5BA83DCCAE85B3D7C5AA /* MissionSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MissionSync.swift; sourceTree = "<group>"; };
+		27CA0CA5C3E499C09378A972 /* ActivityLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityLogView.swift; sourceTree = "<group>"; };
+		3A7B829654AB658B540065CB /* FieldCaptureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FieldCaptureService.swift; sourceTree = "<group>"; };
 		3E60958BD4B95F89C190661F /* LighthouseApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LighthouseApp.swift; sourceTree = "<group>"; };
 		4700FC930212741E667BC5FC /* Lighthouse.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Lighthouse.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		C4A47ADDB99E959DB636AFFF /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		4AAE731AF8093B5669C2EF1D /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		4E1D725624E35517407FBCFC /* ReportParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportParser.swift; sourceTree = "<group>"; };
+		4E2E267690BD529A64BADA8B /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		5BA8F976A729D6A8190AF3E7 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		5FDC2428610F0648141DEFB6 /* AgentBrainStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentBrainStatus.swift; sourceTree = "<group>"; };
+		6AC787142C7094BDDCB1DCD8 /* MissionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MissionViewModel.swift; sourceTree = "<group>"; };
+		6D91D8F885DE2CF5A6825374 /* GuideConsoleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuideConsoleView.swift; sourceTree = "<group>"; };
+		6E36E04B1CEE18A5FF52D9E8 /* SupportModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportModels.swift; sourceTree = "<group>"; };
+		7637EE1CA57B2C29EEACD278 /* MissionRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MissionRepository.swift; sourceTree = "<group>"; };
+		9643BFF4E38B491158FA8AFE /* AgentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentsView.swift; sourceTree = "<group>"; };
+		9C38131C9608D58D1F760F9C /* EmergencyAgent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmergencyAgent.swift; sourceTree = "<group>"; };
+		A37C9C62D166E240221AEC82 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		A7D6FFA9ECD87D491B411F28 /* HomeMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeMapView.swift; sourceTree = "<group>"; };
+		C39F703659C6C204FDA8FD0E /* DemoRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoRunner.swift; sourceTree = "<group>"; };
+		C415CC300B8BAC5144AE0E18 /* VoiceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceService.swift; sourceTree = "<group>"; };
+		E79DC9A85AE7CDDB0C6F4FE2 /* AgentOrchestrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentOrchestrator.swift; sourceTree = "<group>"; };
+		EE05DAAA95C3450B4789DE27 /* LocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationService.swift; sourceTree = "<group>"; };
+		F00563C6BCED24176FE71130 /* SharedComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedComponents.swift; sourceTree = "<group>"; };
+		F5298CCBF8EB17CB6C54FA46 /* MissionPlanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MissionPlanner.swift; sourceTree = "<group>"; };
+		F60AFB62D41650013DDF1B90 /* MissionModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MissionModels.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -28,14 +80,87 @@
 			);
 			sourceTree = "<group>";
 		};
+		09858239A3B228AABB2DCBD8 /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				A7D6FFA9ECD87D491B411F28 /* HomeMapView.swift */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		31CA4B33BA17E63F9A6BBFA2 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				F00563C6BCED24176FE71130 /* SharedComponents.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		426A99744EFB9B0C9E17A667 /* Activity */ = {
+			isa = PBXGroup;
+			children = (
+				27CA0CA5C3E499C09378A972 /* ActivityLogView.swift */,
+			);
+			path = Activity;
+			sourceTree = "<group>";
+		};
+		4DEF8AA7CCDAA0C626B18C69 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				6AC787142C7094BDDCB1DCD8 /* MissionViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		58197FB50AFE702DD3CB5BC1 /* Data */ = {
+			isa = PBXGroup;
+			children = (
+				7637EE1CA57B2C29EEACD278 /* MissionRepository.swift */,
+				1EDD5BA83DCCAE85B3D7C5AA /* MissionSync.swift */,
+			);
+			path = Data;
+			sourceTree = "<group>";
+		};
+		58BF3A9F1B9921FC0B74F38D /* Agent */ = {
+			isa = PBXGroup;
+			children = (
+				5FDC2428610F0648141DEFB6 /* AgentBrainStatus.swift */,
+				E79DC9A85AE7CDDB0C6F4FE2 /* AgentOrchestrator.swift */,
+				048DAC2A6D4E35267B777D83 /* AgentTypes.swift */,
+				C39F703659C6C204FDA8FD0E /* DemoRunner.swift */,
+				9C38131C9608D58D1F760F9C /* EmergencyAgent.swift */,
+				0CECDE098C8A720E228B81A2 /* LighthouseAgent.swift */,
+				F5298CCBF8EB17CB6C54FA46 /* MissionPlanner.swift */,
+				4E1D725624E35517407FBCFC /* ReportParser.swift */,
+			);
+			path = Agent;
+			sourceTree = "<group>";
+		};
 		5FF56E38C5138F75149EE202 /* Lighthouse */ = {
 			isa = PBXGroup;
 			children = (
 				0265B5AA795BABA2208B6FC4 /* Assets.xcassets */,
-				C4A47ADDB99E959DB636AFFF /* ContentView.swift */,
 				3E60958BD4B95F89C190661F /* LighthouseApp.swift */,
+				58BF3A9F1B9921FC0B74F38D /* Agent */,
+				58197FB50AFE702DD3CB5BC1 /* Data */,
+				B8E3220F135F8BC3BF564606 /* Models */,
+				74AD221C5FE7F71FC5A0F548 /* Services */,
+				EF2783D7B3FA749A86F0ABCF /* Theme */,
+				4DEF8AA7CCDAA0C626B18C69 /* ViewModels */,
+				D4B5F3645E2EE1B8EB904A6A /* Views */,
 			);
 			path = Lighthouse;
+			sourceTree = "<group>";
+		};
+		74AD221C5FE7F71FC5A0F548 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				3A7B829654AB658B540065CB /* FieldCaptureService.swift */,
+				0DFF9DA9EF4798C8DC7AC871 /* LocationResolver.swift */,
+				EE05DAAA95C3450B4789DE27 /* LocationService.swift */,
+				C415CC300B8BAC5144AE0E18 /* VoiceService.swift */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 		A2E6DFCA6CDD21559F92CA36 /* Products */ = {
@@ -44,6 +169,71 @@
 				4700FC930212741E667BC5FC /* Lighthouse.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		A5F249FB1EF1A3F132B801E9 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				4E2E267690BD529A64BADA8B /* OnboardingView.swift */,
+			);
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		B8E3220F135F8BC3BF564606 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				F60AFB62D41650013DDF1B90 /* MissionModels.swift */,
+				6E36E04B1CEE18A5FF52D9E8 /* SupportModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		BE9EDC3D8038A0BE86CA7B76 /* Agents */ = {
+			isa = PBXGroup;
+			children = (
+				9643BFF4E38B491158FA8AFE /* AgentsView.swift */,
+			);
+			path = Agents;
+			sourceTree = "<group>";
+		};
+		C71E143234FBCB97B07638BB /* Guide */ = {
+			isa = PBXGroup;
+			children = (
+				6D91D8F885DE2CF5A6825374 /* GuideConsoleView.swift */,
+			);
+			path = Guide;
+			sourceTree = "<group>";
+		};
+		D4B5F3645E2EE1B8EB904A6A /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A37C9C62D166E240221AEC82 /* MainTabView.swift */,
+				4AAE731AF8093B5669C2EF1D /* RootView.swift */,
+				426A99744EFB9B0C9E17A667 /* Activity */,
+				BE9EDC3D8038A0BE86CA7B76 /* Agents */,
+				31CA4B33BA17E63F9A6BBFA2 /* Components */,
+				C71E143234FBCB97B07638BB /* Guide */,
+				09858239A3B228AABB2DCBD8 /* Home */,
+				A5F249FB1EF1A3F132B801E9 /* Onboarding */,
+				DF765E34DADF1BA63013AA10 /* Settings */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		DF765E34DADF1BA63013AA10 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				5BA8F976A729D6A8190AF3E7 /* SettingsView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		EF2783D7B3FA749A86F0ABCF /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+				02B34A0E01E74921036D7177 /* DesignSystem.swift */,
+			);
+			path = Theme;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -113,8 +303,34 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1BEC60FA039668828DF2AA2D /* ContentView.swift in Sources */,
+				E500E72B2BF7CFD9EA5DB86A /* ActivityLogView.swift in Sources */,
+				A0BD2FE59E6C86B62B3F6BDC /* AgentBrainStatus.swift in Sources */,
+				E17F56A1FF07C83D9C77AB63 /* AgentOrchestrator.swift in Sources */,
+				694388710DAAE34D2791F783 /* AgentTypes.swift in Sources */,
+				FFDEBEDE539AA2887C6CF0B2 /* AgentsView.swift in Sources */,
+				7F6653FB4B43485EBF06FE08 /* DemoRunner.swift in Sources */,
+				5D331CC18F95E1D4848CAD16 /* DesignSystem.swift in Sources */,
+				6FE172A71719D34DF7A1912A /* EmergencyAgent.swift in Sources */,
+				F2B8E61634707BEB8EA59472 /* FieldCaptureService.swift in Sources */,
+				6644D6818E2E44885B6006D3 /* GuideConsoleView.swift in Sources */,
+				C3349FF4F1327A250A12951B /* HomeMapView.swift in Sources */,
+				50B25ABA756952BD512883D5 /* LighthouseAgent.swift in Sources */,
 				A93244B894C64949B8F8A4E1 /* LighthouseApp.swift in Sources */,
+				B5E4C93E925F93C5F7CB15B9 /* LocationResolver.swift in Sources */,
+				9BC59876982EF85A2B423749 /* LocationService.swift in Sources */,
+				758420312FCB5F967B155DD6 /* MainTabView.swift in Sources */,
+				CC03A4B8A757AC67FD89A011 /* MissionModels.swift in Sources */,
+				3F8F7FF8E8A2F899FAABEA27 /* MissionPlanner.swift in Sources */,
+				D4C3973A0EFC788086988ACC /* MissionRepository.swift in Sources */,
+				348D163776D88A76DEB3067E /* MissionSync.swift in Sources */,
+				3DA4E3552EDED9A8153E50A9 /* MissionViewModel.swift in Sources */,
+				5451BBED680BA1CB24709E13 /* OnboardingView.swift in Sources */,
+				FF97704BB5E459B3E191F575 /* ReportParser.swift in Sources */,
+				CB6280284483F40FD709E4DF /* RootView.swift in Sources */,
+				32F577C54860D03DEE651618 /* SettingsView.swift in Sources */,
+				C514853AE94E4AB082C7A93B /* SharedComponents.swift in Sources */,
+				8BC714505852CABC3434D21A /* SupportModels.swift in Sources */,
+				FF6C504E08E3CD8206FF09F2 /* VoiceService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -167,7 +383,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -189,6 +405,11 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_GENERATION_MODE = Generated;
 				INFOPLIST_KEY_CFBundleDisplayName = Lighthouse;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Lighthouse can attach field photos to incident reports.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Lighthouse uses your location to geotag incidents and route SOS help near you.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Lighthouse needs the microphone so you can report emergencies by voice.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Lighthouse can import field photos for OCR and incident records.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Lighthouse converts your spoken reports into text for the offline agent.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -212,6 +433,11 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_GENERATION_MODE = Generated;
 				INFOPLIST_KEY_CFBundleDisplayName = Lighthouse;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Lighthouse can attach field photos to incident reports.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Lighthouse uses your location to geotag incidents and route SOS help near you.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Lighthouse needs the microphone so you can report emergencies by voice.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Lighthouse can import field photos for OCR and incident records.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Lighthouse converts your spoken reports into text for the offline agent.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -278,7 +504,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;

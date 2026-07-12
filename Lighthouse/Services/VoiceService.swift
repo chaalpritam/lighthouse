@@ -1,7 +1,6 @@
 import Foundation
 import AVFoundation
 import Speech
-import Combine
 
 enum VoiceState: Equatable {
     case idle
@@ -11,10 +10,11 @@ enum VoiceState: Equatable {
     case unavailable(String)
 }
 
+@Observable
 @MainActor
-final class VoiceService: NSObject, ObservableObject {
-    @Published private(set) var state: VoiceState = .idle
-    @Published private(set) var transcript = ""
+final class VoiceService: NSObject {
+    var state: VoiceState = .idle
+    var transcript = ""
 
     var onFinalTranscript: ((String) -> Void)?
     var onSpeakDone: (() -> Void)?
@@ -36,7 +36,11 @@ final class VoiceService: NSObject, ObservableObject {
                 continuation.resume(returning: status == .authorized)
             }
         }
-        let mic = await AVAudioApplication.requestRecordPermission()
+        let mic = await withCheckedContinuation { (continuation: CheckedContinuation<Bool, Never>) in
+            AVAudioApplication.requestRecordPermission { granted in
+                continuation.resume(returning: granted)
+            }
+        }
         return speech && mic
     }
 

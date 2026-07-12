@@ -1,21 +1,19 @@
 import Foundation
-import Combine
 
 enum AgentBrainMode: String {
     case rules = "Rules engine"
     case onDeviceAI = "On-device AI"
 }
 
+@Observable
 @MainActor
-final class AgentBrainStatus: ObservableObject {
-    @Published var mode: AgentBrainMode = .rules
-    @Published var statusMessage = "Offline rules engine ready"
-    @Published var selectedVariant = "Rules"
-    @Published var isDownloading = false
-    @Published var downloadProgress: Double = 0
+final class AgentBrainStatus {
+    var mode: AgentBrainMode = .rules
+    var statusMessage = "Offline rules engine ready"
+    var selectedVariant = "Rules"
+    var isDownloading = false
+    var downloadProgress: Double = 0
 
-    /// Gemma LiteRT models are Android-specific. On iOS the rules engine
-    /// provides full offline parity; this surface keeps UI parity for settings.
     let variants = ["Rules (on-device)", "Gemma 4 E2B (Android)", "Gemma 4 E4B (Android)"]
 
     var ramSummary: String {

@@ -1,30 +1,30 @@
 import Foundation
 import SwiftData
 import SwiftUI
-import Combine
 import UIKit
 
+@Observable
 @MainActor
-final class MissionViewModel: ObservableObject {
-    @Published var mission: Mission?
-    @Published var isLoading = true
-    @Published var isCreatingMission = false
-    @Published var isSending = false
-    @Published var isDemoRunning = false
-    @Published var demoStepIndex = 0
-    @Published var error: String?
-    @Published var voiceHint: String?
-    @Published var agentPhase: AgentLoopPhase = .idle
-    @Published var phasesTraversed: [AgentLoopPhase] = []
-    @Published var planSteps: [MissionPlanStep] = []
-    @Published var continuousVoiceMode = false
-    @Published var lastSosDispatch: SosDispatchResult?
+final class MissionViewModel {
+    var mission: Mission?
+    var isLoading = true
+    var isCreatingMission = false
+    var isSending = false
+    var isDemoRunning = false
+    var demoStepIndex = 0
+    var error: String?
+    var voiceHint: String?
+    var agentPhase: AgentLoopPhase = .idle
+    var phasesTraversed: [AgentLoopPhase] = []
+    var planSteps: [MissionPlanStep] = []
+    var continuousVoiceMode = false
+    var lastSosDispatch: SosDispatchResult?
 
-    @Published var incidents: [Incident] = []
-    @Published var timeline: [TimelineEvent] = []
-    @Published var messages: [ChatMessage] = []
-    @Published var resources: [ResourceUnit] = []
-    @Published var stats = MissionStats()
+    var incidents: [Incident] = []
+    var timeline: [TimelineEvent] = []
+    var messages: [ChatMessage] = []
+    var resources: [ResourceUnit] = []
+    var stats = MissionStats()
 
     let locationService: LocationService
     let voiceService: VoiceService
@@ -156,13 +156,8 @@ final class MissionViewModel: ObservableObject {
         }
     }
 
-    func startListening() {
-        voiceService.startListening()
-    }
-
-    func stopListening() {
-        voiceService.stopListening()
-    }
+    func startListening() { voiceService.startListening() }
+    func stopListening() { voiceService.stopListening() }
 
     func testVoice() {
         voiceService.speak("Building A collapsed")

@@ -1,12 +1,12 @@
 import Foundation
 import CoreLocation
-import Combine
 
+@Observable
 @MainActor
-final class LocationService: NSObject, ObservableObject {
-    @Published private(set) var location: GeoLocation?
-    @Published private(set) var authorizationStatus: CLAuthorizationStatus = .notDetermined
-    @Published private(set) var errorMessage: String?
+final class LocationService: NSObject {
+    var location: GeoLocation?
+    var authorizationStatus: CLAuthorizationStatus = .notDetermined
+    var errorMessage: String?
 
     private let manager = CLLocationManager()
     private let geocoder = CLGeocoder()
@@ -36,7 +36,6 @@ final class LocationService: NSObject, ObservableObject {
     @discardableResult
     func refreshOnce() async -> GeoLocation? {
         startUpdates()
-        // Wait briefly for a fix if we don't have one yet.
         if location == nil {
             try? await Task.sleep(for: .milliseconds(800))
         }
@@ -49,11 +48,9 @@ final class LocationService: NSObject, ObservableObject {
             var countryCode: String?
             var countryName: String?
             if let placemark = try? await geocoder.reverseGeocodeLocation(clLocation).first {
-                address = [
-                    placemark.name,
-                    placemark.locality,
-                    placemark.administrativeArea
-                ].compactMap { $0 }.joined(separator: ", ")
+                address = [placemark.name, placemark.locality, placemark.administrativeArea]
+                    .compactMap { $0 }
+                    .joined(separator: ", ")
                 countryCode = placemark.isoCountryCode
                 countryName = placemark.country
             }

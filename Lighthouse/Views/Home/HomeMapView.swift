@@ -18,16 +18,17 @@ struct HomeMapView: View {
         NavigationStack {
             ZStack(alignment: .bottom) {
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 16) {
-                        locationCard
-                        guidanceCard
-                        mapCard
-                        legend
-                        quickReportChips
-                        nearbyIncidents
-                        Color.clear.frame(height: 120)
+                    VStack(alignment: .leading, spacing: LHLayout.sectionSpacing) {
+                        locationSection
+                        guidanceSection
+                        mapSection
+                        quickReportSection
+                        nearbyIncidentsSection
+                        Color.clear.frame(height: 96)
                     }
-                    .padding(16)
+                    .padding(.horizontal, LHLayout.screenPadding)
+                    .padding(.top, LHSpacing.md)
+                    .padding(.bottom, LHSpacing.lg)
                 }
                 voiceDock
             }
@@ -47,102 +48,128 @@ struct HomeMapView: View {
         }
     }
 
-    private var locationCard: some View {
-        GlassCard {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    SectionHeaderLabel(title: "Your location")
-                    Text(viewModel.locationService.location?.shortLabel() ?? "Locating…")
-                        .font(.headline)
-                    if let geo = viewModel.locationService.location {
-                        Text(geo.countryLabel())
+    private var locationSection: some View {
+        VStack(alignment: .leading, spacing: LHSpacing.xs) {
+            SectionHeaderLabel(title: "Your Location")
+            SurfaceCard {
+                HStack(alignment: .center, spacing: LHSpacing.sm) {
+                    Image(systemName: "location.fill")
+                        .foregroundStyle(.tint)
+                        .frame(width: 28)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(viewModel.locationService.location?.shortLabel() ?? "Locating…")
+                            .font(.body.weight(.semibold))
+                        if let geo = viewModel.locationService.location {
+                            Text(geo.countryLabel())
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    Spacer(minLength: LHSpacing.xs)
+                    Button {
+                        Task { await viewModel.refreshLocation() }
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                    .accessibilityLabel("Refresh location")
+                }
+            }
+        }
+    }
+
+    private var guidanceSection: some View {
+        VStack(alignment: .leading, spacing: LHSpacing.xs) {
+            SectionHeaderLabel(title: "What To Do")
+            SurfaceCard {
+                VStack(alignment: .leading, spacing: LHSpacing.sm) {
+                    Text(viewModel.messages.last(where: { $0.role == "agent" })?.content
+                          ?? "Tap a quick report or the mic to get guidance.")
+                        .font(.body)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    if !viewModel.planSteps.isEmpty {
+                        Divider()
+                        VStack(alignment: .leading, spacing: LHSpacing.xs) {
+                            ForEach(Array(viewModel.planSteps.enumerated()), id: \.offset) { index, step in
+                                HStack(alignment: .top, spacing: LHSpacing.xs) {
+                                    Text("\(index + 1).")
+                                        .font(.subheadline.weight(.semibold))
+                                        .foregroundStyle(.secondary)
+                                        .frame(width: 20, alignment: .trailing)
+                                    Text(step.action)
+                                        .font(.subheadline)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                            }
+                        }
+                    }
+
+                    HStack(spacing: LHSpacing.xs) {
+                        Label(viewModel.agentPhase.rawValue, systemImage: "circle.fill")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.tint)
+                            .labelStyle(.titleAndIcon)
+                            .symbolRenderingMode(.hierarchical)
+                        Spacer()
+                        Text(viewModel.brainStatus.mode.rawValue)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                 }
-                Spacer()
-                Button {
-                    Task { await viewModel.refreshLocation() }
-                } label: {
-                    Image(systemName: "location.fill")
-                }
-                .buttonStyle(.bordered)
             }
         }
     }
 
-    private var guidanceCard: some View {
-        GlassCard {
-            VStack(alignment: .leading, spacing: 10) {
-                SectionHeaderLabel(title: "What to do")
-                Text(viewModel.messages.last(where: { $0.role == "agent" })?.content
-                      ?? "Tap a quick report or the mic to get guidance.")
-                    .font(.body)
-                if !viewModel.planSteps.isEmpty {
-                    Divider()
-                    ForEach(Array(viewModel.planSteps.enumerated()), id: \.offset) { index, step in
-                        Text("\(index + 1). \(step.action)")
-                            .font(.subheadline)
+    private var mapSection: some View {
+        VStack(alignment: .leading, spacing: LHSpacing.xs) {
+            SectionHeaderLabel(title: "Map")
+            Map(position: $cameraPosition) {
+                UserAnnotation()
+                ForEach(viewModel.incidents, id: \.id) { incident in
+                    if let lat = incident.latitude, let lon = incident.longitude {
+                        Annotation("#\(incident.number)", coordinate: .init(latitude: lat, longitude: lon)) {
+                            Circle()
+                                .fill(LighthouseColor.priority(incident.priority))
+                                .frame(width: 22, height: 22)
+                                .overlay {
+                                    Text("\(incident.number)")
+                                        .font(.caption2.bold())
+                                        .foregroundStyle(.white)
+                                }
+                        }
                     }
                 }
-                HStack {
-                    Text(viewModel.agentPhase.rawValue)
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(LighthouseColor.blue)
-                    Spacer()
-                    Text(viewModel.brainStatus.mode.rawValue)
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                }
             }
-        }
-    }
+            .frame(height: 260)
+            .clipShape(RoundedRectangle(cornerRadius: LHLayout.cardCorner, style: .continuous))
+            .mapControls {
+                MapUserLocationButton()
+                MapCompass()
+            }
 
-    private var mapCard: some View {
-        Map(position: $cameraPosition) {
-            UserAnnotation()
-            ForEach(viewModel.incidents, id: \.id) { incident in
-                if let lat = incident.latitude, let lon = incident.longitude {
-                    Annotation("#\(incident.number)", coordinate: .init(latitude: lat, longitude: lon)) {
+            HStack(spacing: LHSpacing.md) {
+                ForEach(["critical", "high", "medium", "low"], id: \.self) { level in
+                    HStack(spacing: LHSpacing.xxs) {
                         Circle()
-                            .fill(LighthouseColor.priority(incident.priority))
-                            .frame(width: 18, height: 18)
-                            .overlay {
-                                Text("\(incident.number)")
-                                    .font(.caption2.bold())
-                                    .foregroundStyle(.white)
-                            }
+                            .fill(LighthouseColor.priority(level))
+                            .frame(width: 8, height: 8)
+                        Text(level.capitalized)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
                     }
                 }
+                Spacer(minLength: 0)
             }
-        }
-        .frame(height: 280)
-        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .strokeBorder(.white.opacity(0.35), lineWidth: 0.8)
-        }
-        .mapControls {
-            MapUserLocationButton()
-            MapCompass()
+            .padding(.top, LHSpacing.xxs)
         }
     }
 
-    private var legend: some View {
-        HStack(spacing: 12) {
-            ForEach(["critical", "high", "medium", "low"], id: \.self) { level in
-                HStack(spacing: 4) {
-                    Circle().fill(LighthouseColor.priority(level)).frame(width: 8, height: 8)
-                    Text(level.capitalized).font(.caption2)
-                }
-            }
-        }
-    }
-
-    private var quickReportChips: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            SectionHeaderLabel(title: "Quick report")
-            FlowLayout(spacing: 8) {
+    private var quickReportSection: some View {
+        VStack(alignment: .leading, spacing: LHSpacing.xs) {
+            SectionHeaderLabel(title: "Quick Report")
+            FlowLayout(spacing: LHSpacing.xs) {
                 ForEach(quickReports, id: \.self) { report in
                     Button(report) {
                         Task { await viewModel.sendMessage(report) }
@@ -154,29 +181,41 @@ struct HomeMapView: View {
         }
     }
 
-    private var nearbyIncidents: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            SectionHeaderLabel(title: "Nearby incidents")
+    private var nearbyIncidentsSection: some View {
+        VStack(alignment: .leading, spacing: LHSpacing.xs) {
+            SectionHeaderLabel(title: "Nearby Incidents")
             if viewModel.incidents.isEmpty {
-                Text("No incidents yet.")
-                    .foregroundStyle(.secondary)
+                SurfaceCard {
+                    ContentUnavailableView(
+                        "No Incidents Yet",
+                        systemImage: "mappin.slash",
+                        description: Text("Reports you send will appear here.")
+                    )
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, LHSpacing.sm)
+                }
             } else {
-                ForEach(Array(viewModel.incidents.prefix(5)), id: \.id) { incident in
-                    GlassCard(padding: 12, cornerRadius: 14) {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Incident #\(incident.number)").fontWeight(.semibold)
-                                Text(incident.location).font(.caption).foregroundStyle(.secondary)
-                                if let user = viewModel.locationService.location,
-                                   let lat = incident.latitude, let lon = incident.longitude {
-                                    let km = LocationResolver.distanceKm(from: user, toLat: lat, toLon: lon)
-                                    Text(String(format: "%.1f km away", km))
-                                        .font(.caption2)
-                                        .foregroundStyle(LighthouseColor.blue)
+                VStack(spacing: LHLayout.rowSpacing) {
+                    ForEach(Array(viewModel.incidents.prefix(5)), id: \.id) { incident in
+                        SurfaceCard(padding: LHSpacing.sm) {
+                            HStack(alignment: .top, spacing: LHSpacing.sm) {
+                                VStack(alignment: .leading, spacing: LHSpacing.xxs) {
+                                    Text("Incident #\(incident.number)")
+                                        .font(.body.weight(.semibold))
+                                    Text(incident.location)
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
+                                    if let user = viewModel.locationService.location,
+                                       let lat = incident.latitude, let lon = incident.longitude {
+                                        let km = LocationResolver.distanceKm(from: user, toLat: lat, toLon: lon)
+                                        Text(String(format: "%.1f km away", km))
+                                            .font(.caption)
+                                            .foregroundStyle(.tint)
+                                    }
                                 }
+                                Spacer(minLength: LHSpacing.xs)
+                                PriorityBadge(priority: incident.priority)
                             }
-                            Spacer()
-                            PriorityBadge(priority: incident.priority)
                         }
                     }
                 }
@@ -185,15 +224,27 @@ struct HomeMapView: View {
     }
 
     private var voiceDock: some View {
-        GlassEffectContainerCompat {
-            HStack(spacing: 14) {
-                Button("Hands-free") { viewModel.toggleContinuousVoice() }
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(viewModel.continuousVoiceMode ? LighthouseColor.blue : .primary)
-                PhotosPicker(selection: $selectedPhoto, matching: .images) {
-                    Label("Photo", systemImage: "camera.fill")
-                        .labelStyle(.iconOnly)
+        FloatingDock {
+            HStack(spacing: LHSpacing.md) {
+                Button {
+                    viewModel.toggleContinuousVoice()
+                } label: {
+                    Image(systemName: viewModel.continuousVoiceMode ? "ear.fill" : "ear")
+                        .font(.body.weight(.semibold))
+                        .frame(width: 36, height: 36)
                 }
+                .buttonStyle(.bordered)
+                .tint(viewModel.continuousVoiceMode ? .accentColor : .secondary)
+                .accessibilityLabel("Hands-free mode")
+
+                PhotosPicker(selection: $selectedPhoto, matching: .images) {
+                    Image(systemName: "camera.fill")
+                        .font(.body.weight(.semibold))
+                        .frame(width: 36, height: 36)
+                }
+                .buttonStyle(.bordered)
+                .accessibilityLabel("Attach photo")
+
                 VoiceMicButton(isListening: viewModel.voiceService.state == .listening) {
                     if viewModel.voiceService.state == .listening {
                         viewModel.stopListening()
@@ -201,17 +252,23 @@ struct HomeMapView: View {
                         viewModel.startListening()
                     }
                 }
-                if !viewModel.voiceService.transcript.isEmpty {
-                    Text(viewModel.voiceService.transcript)
-                        .font(.caption2)
-                        .lineLimit(2)
-                        .frame(maxWidth: 100)
+
+                Group {
+                    if viewModel.voiceService.transcript.isEmpty {
+                        Text(viewModel.voiceService.state == .listening ? "Listening…" : "Hold mic to report")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    } else {
+                        Text(viewModel.voiceService.transcript)
+                            .font(.caption)
+                            .foregroundStyle(.primary)
+                            .lineLimit(2)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                 }
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 12)
         }
-        .padding(.bottom, 8)
     }
 }
 
@@ -220,8 +277,7 @@ struct FlowLayout: Layout {
     var spacing: CGFloat = 8
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let result = arrange(proposal: proposal, subviews: subviews)
-        return result.size
+        arrange(proposal: proposal, subviews: subviews).size
     }
 
     func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
@@ -252,19 +308,5 @@ struct FlowLayout: Layout {
             x += size.width + spacing
         }
         return (CGSize(width: maxWidth, height: y + rowHeight), origins)
-    }
-}
-
-/// Glass dock wrapper that uses ultra-thin material (Liquid Glass–ready).
-struct GlassEffectContainerCompat<Content: View>: View {
-    @ViewBuilder var content: () -> Content
-    var body: some View {
-        content()
-            .background(.ultraThinMaterial, in: Capsule())
-            .overlay {
-                Capsule().strokeBorder(.white.opacity(0.35), lineWidth: 0.8)
-            }
-            .shadow(color: .black.opacity(0.12), radius: 18, y: 8)
-            .padding(.horizontal, 16)
     }
 }

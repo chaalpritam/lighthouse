@@ -21,8 +21,8 @@ struct MainTabView: View {
                 SettingsView(viewModel: viewModel)
             }
         }
-        .tint(LighthouseColor.blue)
-        .safeAreaInset(edge: .bottom, spacing: 0) {
+        .tint(.accentColor)
+        .safeAreaInset(edge: .top, spacing: 0) {
             if viewModel.mission != nil {
                 AgentBrainStatusBar(brain: viewModel.brainStatus)
             }

@@ -67,7 +67,12 @@ final class MissionRepository {
     }
 
     func processMessage(missionId: String, userMessage: String) async throws -> AgentResponse {
-        let reporterLocation = locationService.location ?? await locationService.refreshOnce()
+        let reporterLocation: GeoLocation?
+        if let existing = locationService.location {
+            reporterLocation = existing
+        } else {
+            reporterLocation = await locationService.refreshOnce()
+        }
         saveChat(missionId: missionId, role: "user", content: userMessage)
         let response = try orchestrator.processMessage(
             missionId: missionId,
@@ -85,7 +90,12 @@ final class MissionRepository {
         description: String
     ) async throws -> SosProcessResult {
         ensureEmergencyResources(missionId: missionId)
-        let reporterLocation = locationService.location ?? await locationService.refreshOnce()
+        let reporterLocation: GeoLocation?
+        if let existing = locationService.location {
+            reporterLocation = existing
+        } else {
+            reporterLocation = await locationService.refreshOnce()
+        }
         var userMessage = "SOS"
         if let preferredAgent {
             userMessage += " [\(preferredAgent.displayName)]"

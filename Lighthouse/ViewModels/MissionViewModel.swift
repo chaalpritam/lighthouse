@@ -86,7 +86,12 @@ final class MissionViewModel {
         isCreatingMission = true
         defer { isCreatingMission = false }
         do {
-            let geo = locationService.location ?? await locationService.refreshOnce()
+            let geo: GeoLocation?
+            if let existing = locationService.location {
+                geo = existing
+            } else {
+                geo = await locationService.refreshOnce()
+            }
             locationService.startUpdates()
             let created = try repository.createMission(
                 name: name,
@@ -106,7 +111,12 @@ final class MissionViewModel {
     }
 
     func quickStart() async {
-        let geo = locationService.location ?? await locationService.refreshOnce()
+        let geo: GeoLocation?
+        if let existing = locationService.location {
+            geo = existing
+        } else {
+            geo = await locationService.refreshOnce()
+        }
         let label = geo?.shortLabel() ?? "My area"
         await createMission(name: "Emergency — \(label)", disasterType: "Emergency", location: label)
     }

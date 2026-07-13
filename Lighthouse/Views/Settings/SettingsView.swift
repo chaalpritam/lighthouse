@@ -11,9 +11,9 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("Agent brain") {
+                Section {
                     Text(viewModel.brainStatus.ramSummary)
-                        .font(.caption)
+                        .font(.subheadline)
                         .foregroundStyle(.secondary)
                     ForEach(viewModel.brainStatus.variants, id: \.self) { variant in
                         Button {
@@ -21,16 +21,19 @@ struct SettingsView: View {
                         } label: {
                             HStack {
                                 Text(variant)
+                                    .foregroundStyle(.primary)
                                 Spacer()
                                 if viewModel.brainStatus.selectedVariant == variant {
                                     Image(systemName: "checkmark")
-                                        .foregroundStyle(LighthouseColor.blue)
+                                        .foregroundStyle(.tint)
+                                        .fontWeight(.semibold)
                                 }
                             }
                         }
-                        .foregroundStyle(.primary)
                     }
                     LabeledContent("Status", value: viewModel.brainStatus.statusMessage)
+                } header: {
+                    Text("Agent Brain")
                 }
 
                 if let mission = viewModel.mission {
@@ -45,15 +48,15 @@ struct SettingsView: View {
                 }
 
                 if !viewModel.planSteps.isEmpty {
-                    Section("Current plan") {
+                    Section("Current Plan") {
                         ForEach(Array(viewModel.planSteps.enumerated()), id: \.offset) { index, step in
                             Text("\(index + 1). \(step.action)")
                         }
                     }
                 }
 
-                Section("Peer sync") {
-                    Button("Export mission JSON") {
+                Section {
+                    Button("Export Mission JSON") {
                         do {
                             exportText = try viewModel.exportMission()
                         } catch {
@@ -61,36 +64,51 @@ struct SettingsView: View {
                         }
                     }
                     if let exportText {
-                        ShareLink(item: exportText, subject: Text("Lighthouse Mission"), message: Text("Offline mission snapshot"))
+                        ShareLink(
+                            item: exportText,
+                            subject: Text("Lighthouse Mission"),
+                            message: Text("Offline mission snapshot")
+                        )
                         Text(exportText)
-                            .font(.caption2.monospaced())
-                            .lineLimit(6)
+                            .font(.caption.monospaced())
+                            .foregroundStyle(.secondary)
+                            .lineLimit(4)
                     }
-                    Button("Import mission JSON") {
+                    Button("Import Mission JSON") {
                         showImporter = true
                     }
+                } header: {
+                    Text("Peer Sync")
+                } footer: {
+                    Text("Share a JSON snapshot with nearby devices when network is unavailable.")
                 }
 
-                Section("Timeline") {
-                    ForEach(Array(viewModel.timeline.prefix(6)), id: \.id) { event in
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(event.title).font(.subheadline.weight(.semibold))
-                            Text(event.eventDescription).font(.caption).foregroundStyle(.secondary)
+                if !viewModel.timeline.isEmpty {
+                    Section("Timeline") {
+                        ForEach(Array(viewModel.timeline.prefix(6)), id: \.id) { event in
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(event.title)
+                                    .font(.body)
+                                Text(event.eventDescription)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(.vertical, 2)
                         }
                     }
                 }
 
                 Section {
-                    Button("Reset app", role: .destructive) {
+                    Button("Reset App", role: .destructive) {
                         showResetConfirm = true
                     }
                 } footer: {
                     Text("Clears mission database and field captures. Model preference is kept.")
                 }
             }
-            .scrollContentBackground(.hidden)
-            .background(LighthouseBackground())
+            .listStyle(.insetGrouped)
             .navigationTitle("Settings")
+            .toolbarTitleDisplayMode(.large)
             .fileImporter(isPresented: $showImporter, allowedContentTypes: [.json, .plainText]) { result in
                 switch result {
                 case .success(let url):
@@ -111,7 +129,7 @@ struct SettingsView: View {
                     try? viewModel.resetApp()
                 }
             }
-            .alert("Sync error", isPresented: Binding(
+            .alert("Sync Error", isPresented: Binding(
                 get: { importError != nil },
                 set: { if !$0 { importError = nil } }
             )) {

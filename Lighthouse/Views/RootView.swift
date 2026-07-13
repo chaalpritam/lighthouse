@@ -14,6 +14,8 @@ struct RootView: View {
                 content(viewModel)
             } else {
                 ProgressView("Loading mission…")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color(.systemGroupedBackground))
                     .task {
                         let vm = MissionViewModel(
                             context: modelContext,
@@ -32,6 +34,8 @@ struct RootView: View {
     private func content(_ viewModel: MissionViewModel) -> some View {
         if viewModel.isLoading {
             ProgressView("Loading mission…")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color(.systemGroupedBackground))
         } else if viewModel.mission == nil {
             OnboardingView(viewModel: viewModel)
         } else {

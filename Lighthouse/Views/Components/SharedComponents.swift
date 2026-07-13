@@ -7,26 +7,30 @@ struct AgentLoopBar: View {
     private let activePhases: [AgentLoopPhase] = [.sense, .decide, .act, .verify, .recover]
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: LHSpacing.xs) {
             ForEach(activePhases) { phase in
-                VStack(spacing: 4) {
+                VStack(spacing: LHSpacing.xxs) {
                     Circle()
                         .fill(color(for: phase))
                         .frame(width: 10, height: 10)
                     Text(phase.rawValue)
-                        .font(.caption2.weight(.medium))
-                        .foregroundStyle(phase == current ? LighthouseColor.blue : LighthouseColor.secondaryLabel)
+                        .font(.caption2)
+                        .foregroundStyle(phase == current ? Color.primary : Color.secondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                 }
                 .frame(maxWidth: .infinity)
             }
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, LHSpacing.xs)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Agent phase \(current.rawValue)")
     }
 
     private func color(for phase: AgentLoopPhase) -> Color {
-        if phase == current { return LighthouseColor.blue }
+        if phase == current { return .accentColor }
         if traversed.contains(phase) { return LighthouseColor.success }
-        return Color.secondary.opacity(0.25)
+        return Color(.tertiaryLabel).opacity(0.4)
     }
 }
 
@@ -34,32 +38,39 @@ struct PriorityBadge: View {
     let priority: String
 
     var body: some View {
-        Text(priority.uppercased())
-            .font(.caption2.weight(.bold))
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .foregroundStyle(.white)
-            .background(LighthouseColor.priority(priority), in: Capsule())
+        Text(priority.capitalized)
+            .font(.caption2.weight(.semibold))
+            .padding(.horizontal, LHSpacing.xs)
+            .padding(.vertical, LHSpacing.xxs)
+            .foregroundStyle(LighthouseColor.priority(priority))
+            .background(
+                LighthouseColor.priority(priority).opacity(0.14),
+                in: Capsule()
+            )
     }
 }
 
 struct StatTile: View {
     let title: String
     let value: String
-    var tint: Color = LighthouseColor.blue
+    var tint: Color = .accentColor
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: LHSpacing.xxs) {
             Text(value)
-                .font(.title2.bold())
+                .font(.title2.weight(.semibold))
                 .foregroundStyle(tint)
+                .monospacedDigit()
             Text(title)
                 .font(.caption)
-                .foregroundStyle(LighthouseColor.secondaryLabel)
+                .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(12)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .padding(LHSpacing.sm)
+        .background(
+            Color(.secondarySystemGroupedBackground),
+            in: RoundedRectangle(cornerRadius: LHLayout.controlCorner, style: .continuous)
+        )
     }
 }
 

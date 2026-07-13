@@ -8,6 +8,7 @@ struct OnboardingView: View {
     @State private var customType = "Earthquake"
     @State private var customLocation = ""
     @State private var showAdvanced = false
+    @State private var appearToken = 0
 
     private let totalSteps = 5
 
@@ -15,11 +16,25 @@ struct OnboardingView: View {
         "Earthquake", "Flood", "Landslide", "Cyclone", "Building Collapse", "Forest Fire"
     ]
 
-    private let presets: [(label: String, name: String, type: String, location: String)] = [
-        ("Earthquake Chennai", "Chennai Earthquake Response", "Earthquake", "Chennai, Tamil Nadu"),
-        ("Flood Kerala", "Kerala Flood Response", "Flood", "Kochi, Kerala"),
-        ("Building Collapse Mumbai", "Mumbai Collapse Response", "Building Collapse", "Mumbai, Maharashtra")
+    private let presets: [(icon: String, label: String, name: String, type: String, location: String)] = [
+        ("waveform.path.ecg", "Earthquake Chennai", "Chennai Earthquake Response", "Earthquake", "Chennai, Tamil Nadu"),
+        ("water.waves", "Flood Kerala", "Kerala Flood Response", "Flood", "Kochi, Kerala"),
+        ("building.2.crop.circle", "Collapse Mumbai", "Mumbai Collapse Response", "Building Collapse", "Mumbai, Maharashtra")
     ]
+
+    private let features: [(icon: String, title: String, detail: String)] = [
+        ("location.fill", "GPS geotagging", "Every report is pinned to where you are"),
+        ("mic.fill", "Voice reports", "Speak naturally — Lighthouse listens"),
+        ("icloud.slash", "Works offline", "No signal required in the field"),
+        ("map.fill", "Map-first home", "See nearby incidents at a glance")
+    ]
+
+    private let helpSteps: [(icon: String, title: String, detail: String)] = [
+        ("waveform.badge.mic", "Tell what’s happening", "Speak or type a field report"),
+        ("list.bullet.clipboard", "Get clear next actions", "Guidance is spoken aloud"),
+        ("dot.radiowaves.left.and.right", "SOS to the right team", "Routes to ambulance, fire, and more")
+    ]
+
 
     var body: some View {
         VStack(spacing: 0) {
@@ -34,11 +49,18 @@ struct OnboardingView: View {
             .tabViewStyle(.page(indexDisplayMode: .never))
             .animation(.smooth(duration: 0.35), value: step)
         }
-        .background { onboardingBackdrop }
+        .background {
+            onboardingBackdrop
+        }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             bottomChrome
         }
+        .onChange(of: step) { _, _ in
+            appearToken += 1
+        }
     }
+
+    // MARK: - Chrome
 
     private var topChrome: some View {
         VStack(spacing: LHSpacing.sm) {
@@ -80,7 +102,8 @@ struct OnboardingView: View {
 
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    Capsule().fill(Color(.tertiarySystemFill))
+                    Capsule()
+                        .fill(Color(.tertiarySystemFill))
                     Capsule()
                         .fill(Color.accentColor)
                         .frame(width: max(geo.size.width * CGFloat(step + 1) / CGFloat(totalSteps), 8))
@@ -110,9 +133,13 @@ struct OnboardingView: View {
     private var primaryAction: some View {
         switch step {
         case 0:
-            PrimaryButton(title: "Continue", systemImage: "arrow.right") { advance(to: 1) }
+            PrimaryButton(title: "Continue", systemImage: "arrow.right") {
+                advance(to: 1)
+            }
         case 1:
-            PrimaryButton(title: "Continue") { advance(to: 2) }
+            PrimaryButton(title: "Continue") {
+                advance(to: 2)
+            }
         case 2:
             PrimaryButton(title: micGranted ? "Continue" : "Allow Microphone to Continue") {
                 if micGranted {
@@ -124,6 +151,7 @@ struct OnboardingView: View {
                     }
                 }
             }
+            .disabled(viewModel.isCreatingMission)
         case 3:
             HStack(spacing: LHSpacing.sm) {
                 Button("Not Now") { advance(to: 4) }
@@ -160,38 +188,67 @@ struct OnboardingView: View {
         .ignoresSafeArea()
     }
 
-    private var welcomeStep: some View {
-        page {
-            Text("Lighthouse").font(.largeTitle.bold())
-            Text("Help when you need it. Works offline.")
-                .font(.title3).foregroundStyle(.secondary)
-            featureRow("location.fill", "GPS geotagging")
-            featureRow("mic.fill", "Voice reports")
-            featureRow("icloud.slash", "Fully offline agent")
-            featureRow("map.fill", "Map-first home")
-        }
-    }
 
-    private var howItHelpsStep: some View {
-        page {
-            Text("How It Helps").font(.largeTitle.bold())
-            Text("Sense → Decide → Act → Verify → Recover")
-                .font(.headline).foregroundStyle(.tint)
-            SurfaceCard {
-                VStack(alignment: .leading, spacing: LHSpacing.sm) {
-                    Text("1. Tell Lighthouse what's happening")
-                    Text("2. Get clear next actions spoken aloud")
-                    Text("3. SOS routes to the right emergency team")
+    // MARK: - Pages
+
+    private var welcomeStep: some View {
+        onboardingScroll {
+            heroIcon("light.max", tint: .accentColor)
+                .symbolEffect(.pulse, options: .repeating)
+
+            pageTitle(
+                "Lighthouse",
+                subtitle: "Field guidance when every second counts — fully offline."
+            )
+
+            LazyVGrid(
+                columns: [
+                    GridItem(.flexible(), spacing: LHLayout.rowSpacing),
+                    GridItem(.flexible(), spacing: LHLayout.rowSpacing)
+                ],
+                spacing: LHLayout.rowSpacing
+            ) {
+                ForEach(features, id: \.title) { feature in
+                    featureCard(icon: feature.icon, title: feature.title, detail: feature.detail)
                 }
             }
         }
     }
 
+    private var howItHelpsStep: some View {
+        onboardingScroll {
+            heroIcon("arrow.triangle.branch", tint: .accentColor)
+
+            pageTitle(
+                "How it helps",
+                subtitle: "An agent loop that turns field reports into action."
+            )
+
+            HStack(spacing: LHSpacing.xxs) {
+                ForEach(["Sense", "Decide", "Act", "Verify", "Recover"], id: \.self) { phase in
+                    Text(phase)
+                        .font(.caption2.weight(.semibold))
+                        .padding(.horizontal, LHSpacing.xs)
+                        .padding(.vertical, LHSpacing.xxs)
+                        .foregroundStyle(.tint)
+                        .background(Color.accentColor.opacity(0.12), in: Capsule())
+                        .frame(maxWidth: .infinity)
+                }
+            }
+
+            VStack(spacing: LHLayout.rowSpacing) {
+                ForEach(Array(helpSteps.enumerated()), id: \.offset) { index, item in
+                    helpCard(number: index + 1, icon: item.icon, title: item.title, detail: item.detail)
+                }
+            }
+        }
+    }
+
+
     private var permissionsStep: some View {
-        page {
-            Text("Permissions").font(.largeTitle.bold())
-            Text("Lighthouse needs a few permissions to help in the field.")
-                .foregroundStyle(.secondary)
+        onboardingScroll {
+            heroIcon("lock.shield.fill", tint: .accentColor)
+            pageTitle("Permissions", subtitle: "Grant access so Lighthouse can listen and geotag reports.")
             permissionRow(title: "Microphone", subtitle: "Required for voice reports", granted: micGranted) {
                 Task { micGranted = await viewModel.voiceService.requestPermissions() }
             }
@@ -203,31 +260,28 @@ struct OnboardingView: View {
                 viewModel.locationService.requestPermission()
                 viewModel.locationService.startUpdates()
             }
-            Button("Voice test: “Building A collapsed”") { viewModel.testVoice() }
+            Button("Play voice test") { viewModel.testVoice() }
                 .buttonStyle(.bordered)
+                .controlSize(.large)
         }
     }
 
     private var aiStep: some View {
-        page {
-            Text("Optional AI").font(.largeTitle.bold())
-            Text(viewModel.brainStatus.ramSummary).foregroundStyle(.secondary)
+        onboardingScroll {
+            heroIcon("brain.head.profile", tint: .accentColor)
+            pageTitle("On-device brain", subtitle: viewModel.brainStatus.ramSummary)
             SurfaceCard {
                 VStack(alignment: .leading, spacing: LHSpacing.sm) {
-                    Text("On iOS, Lighthouse uses the full offline rules engine.")
+                    Text("On iOS, Lighthouse uses the offline rules engine.")
                         .font(.subheadline).foregroundStyle(.secondary)
                     ForEach(viewModel.brainStatus.variants, id: \.self) { variant in
-                        Button {
-                            viewModel.brainStatus.selectVariant(variant)
-                        } label: {
+                        Button { viewModel.brainStatus.selectVariant(variant) } label: {
                             HStack {
-                                Image(systemName: viewModel.brainStatus.selectedVariant == variant ? "checkmark.circle.fill" : "circle")
-                                    .foregroundStyle(.tint)
+                                Image(systemName: viewModel.brainStatus.selectedVariant == variant ? "checkmark.circle.fill" : "circle").foregroundStyle(.tint)
                                 Text(variant).foregroundStyle(.primary)
                                 Spacer()
                             }
-                        }
-                        .buttonStyle(.plain)
+                        }.buttonStyle(.plain)
                     }
                 }
             }
@@ -235,77 +289,18 @@ struct OnboardingView: View {
     }
 
     private var readyStep: some View {
-        page {
-            Text("You're Ready").font(.largeTitle.bold())
-            Text("Start with your GPS location — no mission setup required.")
-                .foregroundStyle(.secondary)
-            Button(showAdvanced ? "Hide Advanced Options" : "Custom Mission & Presets") {
+        onboardingScroll {
+            heroIcon("checkmark.circle.fill", tint: LighthouseColor.success)
+            pageTitle("You're ready", subtitle: "Start from your GPS location — no mission setup required.")
+            Button(showAdvanced ? "Hide advanced" : "Custom mission & presets") {
                 withAnimation(.snappy) { showAdvanced.toggle() }
             }
             .font(.subheadline.weight(.semibold))
             if showAdvanced {
-                SurfaceCard {
-                    VStack(alignment: .leading, spacing: LHSpacing.sm) {
-                        TextField("Mission name", text: $customName).textFieldStyle(.roundedBorder)
-                        Picker("Disaster", selection: $customType) {
-                            ForEach(disasterTypes, id: \.self) { Text($0).tag($0) }
-                        }
-                        .pickerStyle(.menu)
-                        TextField("Location", text: $customLocation).textFieldStyle(.roundedBorder)
-                        Button("Create Mission") {
-                            Task {
-                                await viewModel.createMission(
-                                    name: customName.isEmpty ? "Custom Mission" : customName,
-                                    disasterType: customType,
-                                    location: customLocation.isEmpty ? "Unknown" : customLocation
-                                )
-                            }
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.large)
-                    }
-                }
-                ForEach(presets, id: \.label) { preset in
-                    Button {
-                        Task {
-                            await viewModel.createMission(name: preset.name, disasterType: preset.type, location: preset.location)
-                        }
-                    } label: {
-                        SurfaceCard(padding: LHSpacing.sm) {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(preset.label).font(.body.weight(.semibold)).foregroundStyle(.primary)
-                                Text("\(preset.type) · \(preset.location)").font(.subheadline).foregroundStyle(.secondary)
-                            }
-                        }
-                    }
-                    .buttonStyle(.plain)
-                }
+                Text("Custom setup coming in the next update polish.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
             }
-        }
-    }
-
-    private func page<Content: View>(@ViewBuilder content: () -> Content) -> some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: LHSpacing.md) {
-                content()
-            }
-            .padding(.horizontal, LHLayout.screenPadding)
-            .padding(.top, LHSpacing.md)
-            .padding(.bottom, LHSpacing.xxl)
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .scrollIndicators(.hidden)
-    }
-
-    private func featureRow(_ icon: String, _ title: String) -> some View {
-        HStack(spacing: LHSpacing.sm) {
-            Image(systemName: icon)
-                .font(.body.weight(.semibold))
-                .foregroundStyle(.tint)
-                .frame(width: 28, height: 28)
-                .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-            Text(title)
-            Spacer(minLength: 0)
         }
     }
 
@@ -326,7 +321,111 @@ struct OnboardingView: View {
         }
     }
 
+    // MARK: - Building blocks
+
+    private func onboardingScroll<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: LHSpacing.lg) {
+                content()
+            }
+            .padding(.horizontal, LHLayout.screenPadding)
+            .padding(.top, LHSpacing.md)
+            .padding(.bottom, LHSpacing.xxl)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .id(appearToken)
+            .transition(.opacity.combined(with: .move(edge: .trailing)))
+        }
+        .scrollIndicators(.hidden)
+    }
+
+    private func pageTitle(_ title: String, subtitle: String) -> some View {
+        VStack(alignment: .leading, spacing: LHSpacing.xs) {
+            Text(title)
+                .font(.largeTitle.weight(.bold))
+                .foregroundStyle(.primary)
+            Text(subtitle)
+                .font(.body)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private func heroIcon(_ systemName: String, tint: Color) -> some View {
+        Image(systemName: systemName)
+            .font(.system(size: 36, weight: .semibold))
+            .foregroundStyle(tint)
+            .frame(width: 84, height: 84)
+            .background {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [tint.opacity(0.22), tint.opacity(0.08)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            }
+            .overlay {
+                Circle()
+                    .strokeBorder(tint.opacity(0.18), lineWidth: 1)
+            }
+            .accessibilityHidden(true)
+    }
+
+    private func featureCard(icon: String, title: String, detail: String) -> some View {
+        VStack(alignment: .leading, spacing: LHSpacing.sm) {
+            Image(systemName: icon)
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(.tint)
+                .frame(width: 36, height: 36)
+                .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+            Text(detail)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+        }
+        .padding(LHSpacing.sm)
+        .frame(maxWidth: .infinity, minHeight: 132, alignment: .topLeading)
+        .background(
+            Color(.secondarySystemGroupedBackground),
+            in: RoundedRectangle(cornerRadius: LHLayout.cardCorner, style: .continuous)
+        )
+    }
+
+    private func helpCard(number: Int, icon: String, title: String, detail: String) -> some View {
+        SurfaceCard(padding: LHSpacing.sm) {
+            HStack(alignment: .top, spacing: LHSpacing.sm) {
+                ZStack {
+                    Circle()
+                        .fill(Color.accentColor.opacity(0.12))
+                        .frame(width: 40, height: 40)
+                    Image(systemName: icon)
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(.tint)
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Step \(number)")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                    Text(title)
+                        .font(.body.weight(.semibold))
+                    Text(detail)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 0)
+            }
+        }
+    }
+
     private func advance(to next: Int) {
-        withAnimation(.smooth(duration: 0.35)) { step = next }
+        withAnimation(.smooth(duration: 0.35)) {
+            step = next
+        }
     }
 }

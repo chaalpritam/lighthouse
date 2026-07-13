@@ -1,5 +1,24 @@
 import SwiftUI
 
+/// Spacing scale aligned with Apple HIG (8pt grid).
+enum LHSpacing {
+    static let xxs: CGFloat = 4
+    static let xs: CGFloat = 8
+    static let sm: CGFloat = 12
+    static let md: CGFloat = 16
+    static let lg: CGFloat = 20
+    static let xl: CGFloat = 24
+    static let xxl: CGFloat = 32
+}
+
+enum LHLayout {
+    static let screenPadding: CGFloat = 16
+    static let sectionSpacing: CGFloat = 24
+    static let rowSpacing: CGFloat = 12
+    static let cardCorner: CGFloat = 12
+    static let controlCorner: CGFloat = 10
+}
+
 enum LighthouseColor {
     static let blue = Color(red: 0, green: 0.478, blue: 1)
     static let blueDark = Color(red: 0, green: 0.318, blue: 0.835)

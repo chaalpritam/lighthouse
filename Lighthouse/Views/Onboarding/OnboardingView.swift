@@ -35,7 +35,6 @@ struct OnboardingView: View {
         ("dot.radiowaves.left.and.right", "SOS to the right team", "Routes to ambulance, fire, and more")
     ]
 
-
     var body: some View {
         VStack(spacing: 0) {
             topChrome
@@ -188,7 +187,6 @@ struct OnboardingView: View {
         .ignoresSafeArea()
     }
 
-
     // MARK: - Pages
 
     private var welcomeStep: some View {
@@ -323,20 +321,102 @@ struct OnboardingView: View {
         }
     }
 
-
     private var readyStep: some View {
         onboardingScroll {
             heroIcon("checkmark.circle.fill", tint: LighthouseColor.success)
-            pageTitle("You're ready", subtitle: "Start from your GPS location — no mission setup required.")
-            Button(showAdvanced ? "Hide advanced" : "Custom mission & presets") {
-                withAnimation(.snappy) { showAdvanced.toggle() }
+
+            pageTitle(
+                "You're ready",
+                subtitle: "Start from your GPS location — no mission setup required."
+            )
+
+            SurfaceCard {
+                HStack(spacing: LHSpacing.sm) {
+                    Image(systemName: "location.fill")
+                        .font(.title3)
+                        .foregroundStyle(.tint)
+                        .frame(width: 36, height: 36)
+                        .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(viewModel.locationService.location?.shortLabel() ?? "Finding your location…")
+                            .font(.body.weight(.semibold))
+                        Text(viewModel.locationService.location?.countryLabel() ?? "Location updates when permitted")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer(minLength: 0)
+                }
             }
-            .font(.subheadline.weight(.semibold))
-            if showAdvanced {
-                Text("Add a custom mission or choose a regional preset.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+
+            DisclosureGroup(isExpanded: $showAdvanced) {
+                VStack(alignment: .leading, spacing: LHLayout.rowSpacing) {
+                    SurfaceCard(padding: LHSpacing.sm) {
+                        VStack(alignment: .leading, spacing: LHSpacing.sm) {
+                            TextField("Mission name", text: $customName)
+                                .textFieldStyle(.roundedBorder)
+                            Picker("Disaster", selection: $customType) {
+                                ForEach(disasterTypes, id: \.self) { Text($0).tag($0) }
+                            }
+                            .pickerStyle(.menu)
+                            TextField("Location", text: $customLocation)
+                                .textFieldStyle(.roundedBorder)
+                            Button {
+                                Task {
+                                    await viewModel.createMission(
+                                        name: customName.isEmpty ? "Custom Mission" : customName,
+                                        disasterType: customType,
+                                        location: customLocation.isEmpty ? "Unknown" : customLocation
+                                    )
+                                }
+                            } label: {
+                                Text("Create custom mission")
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .controlSize(.large)
+                        }
+                    }
+
+                    ForEach(presets, id: \.label) { preset in
+                        Button {
+                            Task {
+                                await viewModel.createMission(
+                                    name: preset.name,
+                                    disasterType: preset.type,
+                                    location: preset.location
+                                )
+                            }
+                        } label: {
+                            SurfaceCard(padding: LHSpacing.sm) {
+                                HStack(spacing: LHSpacing.sm) {
+                                    Image(systemName: preset.icon)
+                                        .foregroundStyle(.tint)
+                                        .frame(width: 28)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(preset.label)
+                                            .font(.body.weight(.semibold))
+                                            .foregroundStyle(.primary)
+                                        Text("\(preset.type) · \(preset.location)")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    Spacer(minLength: 0)
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundStyle(.tertiary)
+                                }
+                            }
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.top, LHSpacing.sm)
+            } label: {
+                Text("Custom mission & presets")
+                    .font(.subheadline.weight(.semibold))
             }
+            .tint(.primary)
         }
     }
 

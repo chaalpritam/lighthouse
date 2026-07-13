@@ -20,69 +20,50 @@ enum LHLayout {
 }
 
 enum LighthouseColor {
-    static let blue = Color(red: 0, green: 0.478, blue: 1)
-    static let blueDark = Color(red: 0, green: 0.318, blue: 0.835)
-    static let blueLight = Color(red: 0.910, green: 0.949, blue: 1)
-    static let groupedBackground = Color(red: 0.949, green: 0.949, blue: 0.969)
-    static let critical = Color(red: 1, green: 0.231, blue: 0.188)
-    static let high = Color(red: 1, green: 0.584, blue: 0)
-    static let success = Color(red: 0.204, green: 0.780, blue: 0.349)
-    static let beacon = Color(red: 1, green: 0.800, blue: 0)
-    static let secondaryLabel = Color(red: 0.557, green: 0.557, blue: 0.576)
+    static let blue = Color.accentColor
+    static let critical = Color(.systemRed)
+    static let high = Color(.systemOrange)
+    static let medium = Color(.systemYellow)
+    static let success = Color(.systemGreen)
 
     static func priority(_ value: String) -> Color {
         switch value.lowercased() {
         case "critical": return critical
         case "high": return high
-        case "medium": return beacon
+        case "medium": return medium
         default: return success
         }
     }
 }
 
-/// Liquid Glass–inspired surfaces. On iOS 26+ SDKs these materials
-/// adopt Apple's system glass automatically; custom chrome uses
-/// ultra-thin material + specular stroke to match the latest HIG.
-struct GlassCard<Content: View>: View {
-    var padding: CGFloat = 16
-    var cornerRadius: CGFloat = 20
+/// Standard inset surface matching iOS grouped list cells.
+struct SurfaceCard<Content: View>: View {
+    var padding: CGFloat = LHSpacing.md
     @ViewBuilder var content: () -> Content
 
     var body: some View {
         content()
             .padding(padding)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(.ultraThinMaterial)
-                    .overlay {
-                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                            .strokeBorder(
-                                LinearGradient(
-                                    colors: [
-                                        .white.opacity(0.55),
-                                        .white.opacity(0.12)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 0.8
-                            )
-                    }
-                    .shadow(color: .black.opacity(0.08), radius: 16, y: 8)
-            }
+            .background(
+                Color(.secondarySystemGroupedBackground),
+                in: RoundedRectangle(cornerRadius: LHLayout.cardCorner, style: .continuous)
+            )
     }
 }
 
-struct GlassPrimaryButton: View {
+typealias GlassCard = SurfaceCard
+
+struct PrimaryButton: View {
     let title: String
     var systemImage: String? = nil
-    var tint: Color = LighthouseColor.blue
+    var role: ButtonRole? = nil
+    var tint: Color = .accentColor
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
-            HStack(spacing: 8) {
+        Button(role: role, action: action) {
+            HStack(spacing: LHSpacing.xs) {
                 if let systemImage {
                     Image(systemName: systemImage)
                 }
@@ -90,37 +71,42 @@ struct GlassPrimaryButton: View {
                     .fontWeight(.semibold)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
+            .padding(.vertical, 4)
         }
         .buttonStyle(.borderedProminent)
         .tint(tint)
-        .buttonBorderShape(.capsule)
         .controlSize(.large)
     }
 }
+
+typealias GlassPrimaryButton = PrimaryButton
 
 struct SectionHeaderLabel: View {
     let title: String
 
     var body: some View {
-        Text(title.uppercased())
-            .font(.caption.weight(.semibold))
-            .foregroundStyle(LighthouseColor.secondaryLabel)
-            .tracking(0.6)
+        Text(title)
+            .font(.footnote.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .textCase(nil)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
 struct LighthouseBackground: View {
     var body: some View {
-        LinearGradient(
-            colors: [
-                LighthouseColor.blueLight.opacity(0.85),
-                LighthouseColor.groupedBackground,
-                Color.white
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .ignoresSafeArea()
+        Color(.systemGroupedBackground)
+            .ignoresSafeArea()
+    }
+}
+
+struct ScreenContainer<Content: View>: View {
+    @ViewBuilder var content: () -> Content
+
+    var body: some View {
+        content()
+            .padding(.horizontal, LHLayout.screenPadding)
+            .padding(.vertical, LHSpacing.md)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

@@ -48,7 +48,7 @@
 		27CA0CA5C3E499C09378A972 /* ActivityLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityLogView.swift; sourceTree = "<group>"; };
 		3A7B829654AB658B540065CB /* FieldCaptureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FieldCaptureService.swift; sourceTree = "<group>"; };
 		3E60958BD4B95F89C190661F /* LighthouseApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LighthouseApp.swift; sourceTree = "<group>"; };
-		4700FC930212741E667BC5FC /* Lighthouse.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Lighthouse.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4700FC930212741E667BC5FC /* Lighthouse.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Lighthouse.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AAE731AF8093B5669C2EF1D /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		4E1D725624E35517407FBCFC /* ReportParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportParser.swift; sourceTree = "<group>"; };
 		4E2E267690BD529A64BADA8B /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
@@ -265,8 +265,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1600;
-				TargetAttributes = {
-				};
 			};
 			buildConfigurationList = C22E113E34B0200EA5976AF5 /* Build configuration list for PBXProject "Lighthouse" */;
 			developmentRegion = en;
@@ -402,6 +400,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = VA496FA427;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_GENERATION_MODE = Generated;
 				INFOPLIST_KEY_CFBundleDisplayName = Lighthouse;
@@ -430,6 +429,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = VA496FA427;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_GENERATION_MODE = Generated;
 				INFOPLIST_KEY_CFBundleDisplayName = Lighthouse;

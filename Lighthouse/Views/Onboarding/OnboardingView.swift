@@ -9,6 +9,8 @@ struct OnboardingView: View {
     @State private var customLocation = ""
     @State private var showAdvanced = false
 
+    private let totalSteps = 5
+
     private let disasterTypes = [
         "Earthquake", "Flood", "Landslide", "Cyclone", "Building Collapse", "Forest Fire"
     ]
@@ -21,7 +23,7 @@ struct OnboardingView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            progressHeader
+            topChrome
             TabView(selection: $step) {
                 welcomeStep.tag(0)
                 howItHelpsStep.tag(1)
@@ -30,99 +32,169 @@ struct OnboardingView: View {
                 readyStep.tag(4)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
-            .animation(.snappy, value: step)
-
-            AgentBrainStatusBar(brain: viewModel.brainStatus)
+            .animation(.smooth(duration: 0.35), value: step)
         }
-        .background(LighthouseBackground())
+        .background { onboardingBackdrop }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            bottomChrome
+        }
     }
 
-    private var progressHeader: some View {
-        HStack(spacing: LHSpacing.xs) {
-            ForEach(0..<5, id: \.self) { index in
-                Capsule()
-                    .fill(index <= step ? Color.accentColor : Color(.tertiarySystemFill))
-                    .frame(height: 4)
+    private var topChrome: some View {
+        VStack(spacing: LHSpacing.sm) {
+            HStack {
+                if step > 0 {
+                    Button {
+                        withAnimation(.smooth) { step -= 1 }
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .font(.body.weight(.semibold))
+                            .frame(width: 36, height: 36)
+                            .background(Color(.tertiarySystemFill), in: Circle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Back")
+                } else {
+                    Color.clear.frame(width: 36, height: 36)
+                }
+
+                Spacer()
+
+                Text("\(step + 1) of \(totalSteps)")
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+
+                Spacer()
+
+                if step < totalSteps - 1 && step != 0 {
+                    Button("Skip") {
+                        withAnimation(.smooth) { step = totalSteps - 1 }
+                    }
+                    .font(.subheadline.weight(.semibold))
+                    .frame(minWidth: 36, alignment: .trailing)
+                } else {
+                    Color.clear.frame(width: 36, height: 36)
+                }
             }
+
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Color(.tertiarySystemFill))
+                    Capsule()
+                        .fill(Color.accentColor)
+                        .frame(width: max(geo.size.width * CGFloat(step + 1) / CGFloat(totalSteps), 8))
+                        .animation(.smooth(duration: 0.35), value: step)
+                }
+            }
+            .frame(height: 4)
         }
         .padding(.horizontal, LHLayout.screenPadding)
-        .padding(.top, LHSpacing.md)
-        .padding(.bottom, LHSpacing.sm)
+        .padding(.top, LHSpacing.sm)
+        .padding(.bottom, LHSpacing.xs)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Step \(step + 1) of 5")
+        .accessibilityLabel("Step \(step + 1) of \(totalSteps)")
+    }
+
+    private var bottomChrome: some View {
+        VStack(spacing: LHSpacing.sm) {
+            primaryAction
+        }
+        .padding(.horizontal, LHLayout.screenPadding)
+        .padding(.top, LHSpacing.sm)
+        .padding(.bottom, LHSpacing.sm)
+        .background(.bar)
+    }
+
+    @ViewBuilder
+    private var primaryAction: some View {
+        switch step {
+        case 0:
+            PrimaryButton(title: "Continue", systemImage: "arrow.right") { advance(to: 1) }
+        case 1:
+            PrimaryButton(title: "Continue") { advance(to: 2) }
+        case 2:
+            PrimaryButton(title: micGranted ? "Continue" : "Allow Microphone to Continue") {
+                if micGranted {
+                    advance(to: 3)
+                } else {
+                    Task {
+                        micGranted = await viewModel.voiceService.requestPermissions()
+                        if micGranted { advance(to: 3) }
+                    }
+                }
+            }
+        case 3:
+            HStack(spacing: LHSpacing.sm) {
+                Button("Not Now") { advance(to: 4) }
+                    .buttonStyle(.bordered)
+                    .controlSize(.large)
+                    .frame(maxWidth: .infinity)
+                PrimaryButton(title: "Continue") { advance(to: 4) }
+            }
+        default:
+            PrimaryButton(
+                title: viewModel.isCreatingMission ? "Starting…" : "Get Started",
+                systemImage: "bolt.fill"
+            ) {
+                Task { await viewModel.quickStart() }
+            }
+            .disabled(viewModel.isCreatingMission)
+        }
+    }
+
+    private var onboardingBackdrop: some View {
+        ZStack {
+            Color(.systemGroupedBackground)
+            RadialGradient(
+                colors: [
+                    Color.accentColor.opacity(0.16),
+                    Color.accentColor.opacity(0.04),
+                    .clear
+                ],
+                center: .topTrailing,
+                startRadius: 20,
+                endRadius: 420
+            )
+        }
+        .ignoresSafeArea()
     }
 
     private var welcomeStep: some View {
-        onboardingPage {
-            Image(systemName: "light.max")
-                .font(.system(size: 48, weight: .medium))
-                .foregroundStyle(.tint)
-                .symbolEffect(.pulse, options: .repeating)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.bottom, LHSpacing.xs)
-
-            Text("Lighthouse")
-                .font(.largeTitle.bold())
+        page {
+            Text("Lighthouse").font(.largeTitle.bold())
             Text("Help when you need it. Works offline.")
-                .font(.title3)
-                .foregroundStyle(.secondary)
-                .padding(.bottom, LHSpacing.sm)
-
-            VStack(spacing: LHSpacing.sm) {
-                featureRow("location.fill", "GPS geotagging")
-                featureRow("mic.fill", "Voice reports")
-                featureRow("icloud.slash", "Fully offline agent")
-                featureRow("map.fill", "Map-first home")
-            }
-
-            Spacer(minLength: LHSpacing.xl)
-            PrimaryButton(title: "Continue", systemImage: "arrow.right") { step = 1 }
+                .font(.title3).foregroundStyle(.secondary)
+            featureRow("location.fill", "GPS geotagging")
+            featureRow("mic.fill", "Voice reports")
+            featureRow("icloud.slash", "Fully offline agent")
+            featureRow("map.fill", "Map-first home")
         }
     }
 
     private var howItHelpsStep: some View {
-        onboardingPage {
-            Text("How It Helps")
-                .font(.largeTitle.bold())
+        page {
+            Text("How It Helps").font(.largeTitle.bold())
             Text("Sense → Decide → Act → Verify → Recover")
-                .font(.headline)
-                .foregroundStyle(.tint)
-                .padding(.bottom, LHSpacing.xs)
-
+                .font(.headline).foregroundStyle(.tint)
             SurfaceCard {
                 VStack(alignment: .leading, spacing: LHSpacing.sm) {
-                    numberedRow(1, "Tell Lighthouse what's happening")
-                    numberedRow(2, "Get clear next actions spoken aloud")
-                    numberedRow(3, "SOS routes to the right emergency team")
+                    Text("1. Tell Lighthouse what's happening")
+                    Text("2. Get clear next actions spoken aloud")
+                    Text("3. SOS routes to the right emergency team")
                 }
-            }
-
-            Spacer(minLength: LHSpacing.xl)
-            navigationFooter(back: 0) {
-                PrimaryButton(title: "Continue") { step = 2 }
             }
         }
     }
 
     private var permissionsStep: some View {
-        onboardingPage {
-            Text("Permissions")
-                .font(.largeTitle.bold())
+        page {
+            Text("Permissions").font(.largeTitle.bold())
             Text("Lighthouse needs a few permissions to help in the field.")
-                .font(.body)
                 .foregroundStyle(.secondary)
-                .padding(.bottom, LHSpacing.xs)
-
-            permissionRow(
-                title: "Microphone",
-                subtitle: "Required for voice reports",
-                granted: micGranted
-            ) {
-                Task {
-                    micGranted = await viewModel.voiceService.requestPermissions()
-                }
+            permissionRow(title: "Microphone", subtitle: "Required for voice reports", granted: micGranted) {
+                Task { micGranted = await viewModel.voiceService.requestPermissions() }
             }
-
             permissionRow(
                 title: "Location",
                 subtitle: "Recommended for geotagging",
@@ -131,97 +203,55 @@ struct OnboardingView: View {
                 viewModel.locationService.requestPermission()
                 viewModel.locationService.startUpdates()
             }
-
-            Button("Voice test: “Building A collapsed”") {
-                viewModel.testVoice()
-            }
-            .buttonStyle(.bordered)
-            .controlSize(.regular)
-
-            Spacer(minLength: LHSpacing.xl)
-            navigationFooter(back: 1) {
-                PrimaryButton(title: "Continue") { step = 3 }
-                    .disabled(!micGranted)
-                    .opacity(micGranted ? 1 : 0.5)
-            }
+            Button("Voice test: “Building A collapsed”") { viewModel.testVoice() }
+                .buttonStyle(.bordered)
         }
     }
 
     private var aiStep: some View {
-        onboardingPage {
-            Text("Optional AI")
-                .font(.largeTitle.bold())
-            Text(viewModel.brainStatus.ramSummary)
-                .font(.body)
-                .foregroundStyle(.secondary)
-                .padding(.bottom, LHSpacing.xs)
-
+        page {
+            Text("Optional AI").font(.largeTitle.bold())
+            Text(viewModel.brainStatus.ramSummary).foregroundStyle(.secondary)
             SurfaceCard {
                 VStack(alignment: .leading, spacing: LHSpacing.sm) {
-                    Text("On iOS, Lighthouse uses the full offline rules engine. Android Gemma LiteRT models are noted in Settings.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-
+                    Text("On iOS, Lighthouse uses the full offline rules engine.")
+                        .font(.subheadline).foregroundStyle(.secondary)
                     ForEach(viewModel.brainStatus.variants, id: \.self) { variant in
                         Button {
                             viewModel.brainStatus.selectVariant(variant)
                         } label: {
-                            HStack(spacing: LHSpacing.sm) {
-                                Image(systemName: viewModel.brainStatus.selectedVariant == variant
-                                      ? "checkmark.circle.fill" : "circle")
+                            HStack {
+                                Image(systemName: viewModel.brainStatus.selectedVariant == variant ? "checkmark.circle.fill" : "circle")
                                     .foregroundStyle(.tint)
-                                Text(variant)
-                                    .foregroundStyle(.primary)
+                                Text(variant).foregroundStyle(.primary)
                                 Spacer()
                             }
-                            .padding(.vertical, LHSpacing.xxs)
                         }
                         .buttonStyle(.plain)
                     }
                 }
             }
-
-            Spacer(minLength: LHSpacing.xl)
-            HStack(spacing: LHSpacing.sm) {
-                Button("Back") { step = 2 }
-                Spacer()
-                Button("Skip") { step = 4 }
-                PrimaryButton(title: "Continue") { step = 4 }
-                    .frame(width: 140)
-            }
         }
     }
 
     private var readyStep: some View {
-        onboardingPage {
-            Text("You're Ready")
-                .font(.largeTitle.bold())
+        page {
+            Text("You're Ready").font(.largeTitle.bold())
             Text("Start with your GPS location — no mission setup required.")
-                .font(.body)
                 .foregroundStyle(.secondary)
-                .padding(.bottom, LHSpacing.xs)
-
-            PrimaryButton(title: "Get Started", systemImage: "bolt.fill") {
-                Task { await viewModel.quickStart() }
-            }
-            .disabled(viewModel.isCreatingMission)
-
             Button(showAdvanced ? "Hide Advanced Options" : "Custom Mission & Presets") {
                 withAnimation(.snappy) { showAdvanced.toggle() }
             }
             .font(.subheadline.weight(.semibold))
-
             if showAdvanced {
                 SurfaceCard {
                     VStack(alignment: .leading, spacing: LHSpacing.sm) {
-                        TextField("Mission name", text: $customName)
-                            .textFieldStyle(.roundedBorder)
+                        TextField("Mission name", text: $customName).textFieldStyle(.roundedBorder)
                         Picker("Disaster", selection: $customType) {
                             ForEach(disasterTypes, id: \.self) { Text($0).tag($0) }
                         }
                         .pickerStyle(.menu)
-                        TextField("Location", text: $customLocation)
-                            .textFieldStyle(.roundedBorder)
+                        TextField("Location", text: $customLocation).textFieldStyle(.roundedBorder)
                         Button("Create Mission") {
                             Task {
                                 await viewModel.createMission(
@@ -235,58 +265,36 @@ struct OnboardingView: View {
                         .controlSize(.large)
                     }
                 }
-
-                VStack(spacing: LHLayout.rowSpacing) {
-                    ForEach(presets, id: \.label) { preset in
-                        Button {
-                            Task {
-                                await viewModel.createMission(
-                                    name: preset.name,
-                                    disasterType: preset.type,
-                                    location: preset.location
-                                )
-                            }
-                        } label: {
-                            SurfaceCard(padding: LHSpacing.sm) {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(preset.label)
-                                        .font(.body.weight(.semibold))
-                                        .foregroundStyle(.primary)
-                                    Text("\(preset.type) · \(preset.location)")
-                                        .font(.subheadline)
-                                        .foregroundStyle(.secondary)
-                                }
+                ForEach(presets, id: \.label) { preset in
+                    Button {
+                        Task {
+                            await viewModel.createMission(name: preset.name, disasterType: preset.type, location: preset.location)
+                        }
+                    } label: {
+                        SurfaceCard(padding: LHSpacing.sm) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(preset.label).font(.body.weight(.semibold)).foregroundStyle(.primary)
+                                Text("\(preset.type) · \(preset.location)").font(.subheadline).foregroundStyle(.secondary)
                             }
                         }
-                        .buttonStyle(.plain)
                     }
+                    .buttonStyle(.plain)
                 }
             }
-
-            Button("Back") { step = 3 }
-                .padding(.top, LHSpacing.xs)
         }
     }
 
-    private func onboardingPage<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+    private func page<Content: View>(@ViewBuilder content: () -> Content) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: LHSpacing.md) {
                 content()
             }
             .padding(.horizontal, LHLayout.screenPadding)
-            .padding(.top, LHSpacing.sm)
-            .padding(.bottom, LHSpacing.xl)
+            .padding(.top, LHSpacing.md)
+            .padding(.bottom, LHSpacing.xxl)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-    }
-
-    private func navigationFooter(back: Int, @ViewBuilder trailing: () -> some View) -> some View {
-        HStack(spacing: LHSpacing.sm) {
-            Button("Back") { step = back }
-            Spacer()
-            trailing()
-                .frame(maxWidth: 180)
-        }
+        .scrollIndicators(.hidden)
     }
 
     private func featureRow(_ icon: String, _ title: String) -> some View {
@@ -297,21 +305,7 @@ struct OnboardingView: View {
                 .frame(width: 28, height: 28)
                 .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
             Text(title)
-                .font(.body)
             Spacer(minLength: 0)
-        }
-    }
-
-    private func numberedRow(_ number: Int, _ text: String) -> some View {
-        HStack(alignment: .top, spacing: LHSpacing.sm) {
-            Text("\(number)")
-                .font(.subheadline.weight(.bold))
-                .foregroundStyle(.tint)
-                .frame(width: 22, height: 22)
-                .background(Color.accentColor.opacity(0.12), in: Circle())
-            Text(text)
-                .font(.body)
-                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
@@ -319,24 +313,20 @@ struct OnboardingView: View {
         SurfaceCard(padding: LHSpacing.sm) {
             HStack(spacing: LHSpacing.sm) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(.body.weight(.semibold))
-                    Text(subtitle)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                    Text(title).font(.body.weight(.semibold))
+                    Text(subtitle).font(.subheadline).foregroundStyle(.secondary)
                 }
                 Spacer(minLength: LHSpacing.xs)
                 if granted {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.title3)
-                        .foregroundStyle(LighthouseColor.success)
-                        .accessibilityLabel("Granted")
+                    Image(systemName: "checkmark.circle.fill").font(.title3).foregroundStyle(LighthouseColor.success)
                 } else {
-                    Button("Allow", action: action)
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.small)
+                    Button("Allow", action: action).buttonStyle(.borderedProminent).controlSize(.small)
                 }
             }
         }
+    }
+
+    private func advance(to next: Int) {
+        withAnimation(.smooth(duration: 0.35)) { step = next }
     }
 }

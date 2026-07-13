@@ -244,49 +244,85 @@ struct OnboardingView: View {
         }
     }
 
-
     private var permissionsStep: some View {
         onboardingScroll {
             heroIcon("lock.shield.fill", tint: .accentColor)
-            pageTitle("Permissions", subtitle: "Grant access so Lighthouse can listen and geotag reports.")
-            permissionRow(title: "Microphone", subtitle: "Required for voice reports", granted: micGranted) {
-                Task { micGranted = await viewModel.voiceService.requestPermissions() }
+
+            pageTitle(
+                "Permissions",
+                subtitle: "Grant access so Lighthouse can listen and geotag reports."
+            )
+
+            VStack(spacing: LHLayout.rowSpacing) {
+                permissionCard(
+                    icon: "mic.fill",
+                    title: "Microphone",
+                    subtitle: "Required for voice reports",
+                    granted: micGranted,
+                    actionTitle: "Allow"
+                ) {
+                    Task {
+                        micGranted = await viewModel.voiceService.requestPermissions()
+                    }
+                }
+
+                permissionCard(
+                    icon: "location.fill",
+                    title: "Location",
+                    subtitle: "Recommended for geotagging",
+                    granted: viewModel.locationService.location != nil,
+                    actionTitle: "Allow"
+                ) {
+                    viewModel.locationService.requestPermission()
+                    viewModel.locationService.startUpdates()
+                }
             }
-            permissionRow(
-                title: "Location",
-                subtitle: "Recommended for geotagging",
-                granted: viewModel.locationService.location != nil
-            ) {
-                viewModel.locationService.requestPermission()
-                viewModel.locationService.startUpdates()
+
+            Button {
+                viewModel.testVoice()
+            } label: {
+                Label("Play voice test", systemImage: "speaker.wave.2.fill")
+                    .frame(maxWidth: .infinity)
             }
-            Button("Play voice test") { viewModel.testVoice() }
-                .buttonStyle(.bordered)
-                .controlSize(.large)
+            .buttonStyle(.bordered)
+            .controlSize(.large)
         }
     }
 
     private var aiStep: some View {
         onboardingScroll {
             heroIcon("brain.head.profile", tint: .accentColor)
-            pageTitle("On-device brain", subtitle: viewModel.brainStatus.ramSummary)
+
+            pageTitle(
+                "On-device brain",
+                subtitle: viewModel.brainStatus.ramSummary
+            )
+
             SurfaceCard {
-                VStack(alignment: .leading, spacing: LHSpacing.sm) {
-                    Text("On iOS, Lighthouse uses the offline rules engine.")
-                        .font(.subheadline).foregroundStyle(.secondary)
-                    ForEach(viewModel.brainStatus.variants, id: \.self) { variant in
-                        Button { viewModel.brainStatus.selectVariant(variant) } label: {
-                            HStack {
-                                Image(systemName: viewModel.brainStatus.selectedVariant == variant ? "checkmark.circle.fill" : "circle").foregroundStyle(.tint)
-                                Text(variant).foregroundStyle(.primary)
-                                Spacer()
-                            }
-                        }.buttonStyle(.plain)
+                VStack(alignment: .leading, spacing: LHSpacing.md) {
+                    Label {
+                        Text("Rules engine is ready on iOS")
+                            .font(.subheadline.weight(.semibold))
+                    } icon: {
+                        Image(systemName: "checkmark.seal.fill")
+                            .foregroundStyle(LighthouseColor.success)
                     }
+
+                    Text("Gemma LiteRT variants are Android-only. You can note a preference here; iOS keeps using the offline rules engine.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+
+            VStack(spacing: LHSpacing.xs) {
+                ForEach(viewModel.brainStatus.variants, id: \.self) { variant in
+                    brainOption(variant)
                 }
             }
         }
     }
+
 
     private var readyStep: some View {
         onboardingScroll {
@@ -297,26 +333,9 @@ struct OnboardingView: View {
             }
             .font(.subheadline.weight(.semibold))
             if showAdvanced {
-                Text("Custom setup coming in the next update polish.")
+                Text("Add a custom mission or choose a regional preset.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
-            }
-        }
-    }
-
-    private func permissionRow(title: String, subtitle: String, granted: Bool, action: @escaping () -> Void) -> some View {
-        SurfaceCard(padding: LHSpacing.sm) {
-            HStack(spacing: LHSpacing.sm) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title).font(.body.weight(.semibold))
-                    Text(subtitle).font(.subheadline).foregroundStyle(.secondary)
-                }
-                Spacer(minLength: LHSpacing.xs)
-                if granted {
-                    Image(systemName: "checkmark.circle.fill").font(.title3).foregroundStyle(LighthouseColor.success)
-                } else {
-                    Button("Allow", action: action).buttonStyle(.borderedProminent).controlSize(.small)
-                }
             }
         }
     }
@@ -421,6 +440,83 @@ struct OnboardingView: View {
                 Spacer(minLength: 0)
             }
         }
+    }
+
+    private func permissionCard(
+        icon: String,
+        title: String,
+        subtitle: String,
+        granted: Bool,
+        actionTitle: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        SurfaceCard(padding: LHSpacing.sm) {
+            HStack(spacing: LHSpacing.sm) {
+                Image(systemName: icon)
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(granted ? LighthouseColor.success : Color.accentColor)
+                    .frame(width: 40, height: 40)
+                    .background(
+                        (granted ? LighthouseColor.success : Color.accentColor).opacity(0.12),
+                        in: RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    )
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.body.weight(.semibold))
+                    Text(subtitle)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer(minLength: LHSpacing.xs)
+
+                if granted {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.title2)
+                        .foregroundStyle(LighthouseColor.success)
+                        .accessibilityLabel("Granted")
+                } else {
+                    Button(actionTitle, action: action)
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.small)
+                }
+            }
+        }
+    }
+
+    private func brainOption(_ variant: String) -> some View {
+        let selected = viewModel.brainStatus.selectedVariant == variant
+        return Button {
+            viewModel.brainStatus.selectVariant(variant)
+        } label: {
+            HStack(spacing: LHSpacing.sm) {
+                Image(systemName: selected ? "checkmark.circle.fill" : "circle")
+                    .font(.title3)
+                    .foregroundStyle(selected ? Color.accentColor : Color.secondary)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(variant)
+                        .font(.body.weight(.medium))
+                        .foregroundStyle(.primary)
+                    if !variant.contains("Rules") {
+                        Text("Shown for parity · Android only")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(LHSpacing.sm)
+            .background(
+                Color(.secondarySystemGroupedBackground),
+                in: RoundedRectangle(cornerRadius: LHLayout.cardCorner, style: .continuous)
+            )
+            .overlay {
+                RoundedRectangle(cornerRadius: LHLayout.cardCorner, style: .continuous)
+                    .strokeBorder(selected ? Color.accentColor : .clear, lineWidth: 2)
+            }
+        }
+        .buttonStyle(.plain)
     }
 
     private func advance(to next: Int) {

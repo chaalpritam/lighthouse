@@ -216,3 +216,70 @@ struct PlanStepsList: View {
         }
     }
 }
+
+struct IncidentRow: View {
+    let incident: Incident
+    var subtitle: String? = nil
+    var detail: String? = nil
+    var meta: String? = nil
+    var distanceLabel: String? = nil
+
+    var body: some View {
+        SurfaceCard(padding: LHSpacing.sm) {
+            HStack(alignment: .top, spacing: LHSpacing.sm) {
+                VStack(alignment: .leading, spacing: LHSpacing.xxs) {
+                    Text(subtitle ?? "Incident #\(incident.number)")
+                        .font(.body.weight(.semibold))
+                    if let detail {
+                        Text(detail)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(2)
+                            .fixedSize(horizontal: false, vertical: true)
+                    } else {
+                        Text(incident.location)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    if let meta {
+                        Text(meta)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    if let distanceLabel {
+                        Text(distanceLabel)
+                            .font(.caption)
+                            .foregroundStyle(.tint)
+                    }
+                }
+                Spacer(minLength: LHSpacing.xs)
+                PriorityBadge(priority: incident.priority)
+            }
+        }
+    }
+}
+
+struct TimelineEventRow: View {
+    let event: TimelineEvent
+    var showsTimestamp: Bool = true
+
+    var body: some View {
+        HStack(alignment: .top, spacing: LHSpacing.sm) {
+            if showsTimestamp {
+                Text(event.createdAt, style: .time)
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
+                    .frame(width: 52, alignment: .leading)
+            }
+            VStack(alignment: .leading, spacing: LHSpacing.xxs) {
+                Text(event.title)
+                    .font(.subheadline.weight(.semibold))
+                Text(event.eventDescription)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
+        }
+    }
+}

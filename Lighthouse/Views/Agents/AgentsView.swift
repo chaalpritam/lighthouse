@@ -8,7 +8,7 @@ struct AgentsView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: LHLayout.sectionSpacing) {
+                ScreenScrollContent {
                     locationHeader
                     sosComposer
                     agentsList
@@ -16,8 +16,6 @@ struct AgentsView: View {
                         lastSosSection(sos)
                     }
                 }
-                .padding(.horizontal, LHLayout.screenPadding)
-                .padding(.vertical, LHSpacing.md)
             }
             .background(LighthouseBackground())
             .navigationTitle("Agents")
@@ -32,38 +30,21 @@ struct AgentsView: View {
     }
 
     private var locationHeader: some View {
-        SurfaceCard(padding: LHSpacing.sm) {
-            HStack(spacing: LHSpacing.sm) {
-                Image(systemName: "mappin.and.ellipse")
-                    .font(.title3)
-                    .foregroundStyle(.tint)
-                    .frame(width: 28)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(viewModel.locationService.location?.shortLabel() ?? "Location unavailable")
-                        .font(.body.weight(.semibold))
-                    Text(viewModel.locationService.location?.countryLabel() ?? "Unknown region")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer(minLength: 0)
-            }
-        }
+        LocationCard(
+            primary: viewModel.locationService.location?.shortLabel() ?? "Location unavailable",
+            secondary: viewModel.locationService.location?.countryLabel() ?? "Unknown region"
+        )
     }
 
     private var sosComposer: some View {
-        VStack(alignment: .leading, spacing: LHSpacing.xs) {
-            SectionHeaderLabel(title: "Emergency")
+        SectionBlock(title: "Emergency") {
             SurfaceCard {
                 VStack(alignment: .leading, spacing: LHSpacing.sm) {
                     Text("Describe the emergency")
                         .font(.headline)
                     TextField("Injured person near Building A…", text: $description, axis: .vertical)
                         .lineLimit(3...5)
-                        .padding(LHSpacing.sm)
-                        .background(
-                            Color(.tertiarySystemFill),
-                            in: RoundedRectangle(cornerRadius: LHLayout.controlCorner, style: .continuous)
-                        )
+                        .lighthouseField()
                         .onChange(of: description) { _, value in
                             detected = EmergencyAgentClassifier.classify(value)
                         }
@@ -81,15 +62,9 @@ struct AgentsView: View {
                             Task { await viewModel.dispatchSos(agent: nil, description: description) }
                         }
 
-                        Button {
+                        SecondaryButton(title: "Speak", systemImage: "mic.fill") {
                             viewModel.startListening()
-                        } label: {
-                            Label("Speak", systemImage: "mic.fill")
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 4)
                         }
-                        .buttonStyle(.bordered)
-                        .controlSize(.large)
                     }
                 }
             }
@@ -97,8 +72,7 @@ struct AgentsView: View {
     }
 
     private var agentsList: some View {
-        VStack(alignment: .leading, spacing: LHSpacing.xs) {
-            SectionHeaderLabel(title: "Dispatch Teams")
+        SectionBlock(title: "Dispatch Teams") {
             VStack(spacing: LHLayout.rowSpacing) {
                 ForEach(EmergencyAgent.allCases) { agent in
                     agentCard(agent)
@@ -110,11 +84,11 @@ struct AgentsView: View {
     private func agentCard(_ agent: EmergencyAgent) -> some View {
         SurfaceCard {
             HStack(alignment: .top, spacing: LHSpacing.sm) {
-                Image(systemName: agent.systemImage)
-                    .font(.title2)
-                    .foregroundStyle(.tint)
-                    .frame(width: 32, alignment: .center)
-                    .padding(.top, 2)
+                IconWell(
+                    systemName: agent.systemImage,
+                    size: LHLayout.iconWellMd,
+                    font: .title3
+                )
 
                 VStack(alignment: .leading, spacing: LHSpacing.xs) {
                     Text(agent.displayName)
@@ -127,12 +101,12 @@ struct AgentsView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
 
-                    Button("SOS \(agent.displayName)") {
+                    PrimaryButton(
+                        title: "SOS \(agent.displayName)",
+                        tint: LighthouseColor.critical
+                    ) {
                         Task { await viewModel.dispatchSos(agent: agent, description: description) }
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(LighthouseColor.critical)
-                    .controlSize(.regular)
                     .padding(.top, LHSpacing.xxs)
                 }
                 Spacer(minLength: 0)
@@ -141,8 +115,7 @@ struct AgentsView: View {
     }
 
     private func lastSosSection(_ sos: SosDispatchResult) -> some View {
-        VStack(alignment: .leading, spacing: LHSpacing.xs) {
-            SectionHeaderLabel(title: "Last SOS")
+        SectionBlock(title: "Last SOS") {
             SurfaceCard {
                 VStack(alignment: .leading, spacing: LHSpacing.sm) {
                     Text(sos.message)

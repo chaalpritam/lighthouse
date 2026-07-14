@@ -64,8 +64,6 @@ struct SurfaceCard<Content: View>: View {
     }
 }
 
-typealias GlassCard = SurfaceCard
-
 struct PrimaryButton: View {
     let title: String
     var systemImage: String? = nil
@@ -75,23 +73,25 @@ struct PrimaryButton: View {
 
     var body: some View {
         Button(role: role, action: action) {
-            HStack(spacing: LHSpacing.xs) {
-                if let systemImage {
-                    Image(systemName: systemImage)
-                }
-                Text(title)
-                    .fontWeight(.semibold)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 4)
+            label
         }
         .buttonStyle(.borderedProminent)
         .tint(tint)
         .controlSize(.large)
     }
-}
 
-typealias GlassPrimaryButton = PrimaryButton
+    private var label: some View {
+        HStack(spacing: LHSpacing.xs) {
+            if let systemImage {
+                Image(systemName: systemImage)
+            }
+            Text(title)
+                .fontWeight(.semibold)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 4)
+    }
+}
 
 struct SecondaryButton: View {
     let title: String
@@ -169,6 +169,66 @@ extension View {
     }
 }
 
+struct EmptyStateCard: View {
+    let title: String
+    var systemImage: String? = nil
+    var description: String? = nil
+    var compact: Bool = false
+
+    var body: some View {
+        SurfaceCard {
+            if compact {
+                Text(description ?? title)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            } else if let systemImage, let description {
+                ContentUnavailableView(title, systemImage: systemImage, description: Text(description))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, LHSpacing.sm)
+            } else if let systemImage {
+                ContentUnavailableView(title, systemImage: systemImage)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, LHSpacing.sm)
+            } else {
+                Text(title)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+}
+
+/// Consistent outer padding for scroll-based tab screens.
+struct ScreenScrollContent<Content: View>: View {
+    var bottomClearance: CGFloat = 0
+    @ViewBuilder var content: () -> Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: LHLayout.sectionSpacing) {
+            content()
+            if bottomClearance > 0 {
+                Color.clear.frame(height: bottomClearance)
+            }
+        }
+        .padding(.horizontal, LHLayout.screenPadding)
+        .padding(.vertical, LHSpacing.md)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+struct SectionBlock<Content: View>: View {
+    let title: String
+    @ViewBuilder var content: () -> Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: LHSpacing.xs) {
+            SectionHeaderLabel(title: title)
+            content()
+        }
+    }
+}
+
 struct LighthouseBackground: View {
     var body: some View {
         Color(.systemGroupedBackground)
@@ -176,13 +236,57 @@ struct LighthouseBackground: View {
     }
 }
 
-struct ScreenContainer<Content: View>: View {
-    @ViewBuilder var content: () -> Content
+struct InfoRow: View {
+    let label: String
+    let value: String
 
     var body: some View {
-        content()
-            .padding(.horizontal, LHLayout.screenPadding)
-            .padding(.vertical, LHSpacing.md)
-            .frame(maxWidth: .infinity, alignment: .leading)
+        HStack(alignment: .firstTextBaseline) {
+            Text(label)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            Spacer(minLength: LHSpacing.sm)
+            Text(value)
+                .font(.subheadline.weight(.medium))
+                .multilineTextAlignment(.trailing)
+        }
+    }
+}
+
+struct SelectableRow: View {
+    let title: String
+    var subtitle: String? = nil
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: LHSpacing.sm) {
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.title3)
+                    .foregroundStyle(isSelected ? Color.accentColor : Color.secondary)
+                VStack(alignment: .leading, spacing: LHSpacing.xxs) {
+                    Text(title)
+                        .font(.body.weight(.medium))
+                        .foregroundStyle(.primary)
+                    if let subtitle {
+                        Text(subtitle)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(LHSpacing.sm)
+            .background(
+                Color(.secondarySystemGroupedBackground),
+                in: RoundedRectangle(cornerRadius: LHLayout.cardCorner, style: .continuous)
+            )
+            .overlay {
+                RoundedRectangle(cornerRadius: LHLayout.cardCorner, style: .continuous)
+                    .strokeBorder(isSelected ? Color.accentColor : .clear, lineWidth: 2)
+            }
+        }
+        .buttonStyle(.plain)
     }
 }

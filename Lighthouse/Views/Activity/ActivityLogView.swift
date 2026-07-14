@@ -12,7 +12,7 @@ struct ActivityLogView: View {
                 Divider()
                 composer
             }
-            .background(Color(.systemGroupedBackground))
+            .background(LighthouseBackground())
             .navigationTitle("Activity")
             .toolbarTitleDisplayMode(.large)
         }
@@ -58,7 +58,7 @@ struct ActivityLogView: View {
                 .padding(.vertical, LHSpacing.xs)
                 .background(
                     Color(.tertiarySystemFill),
-                    in: RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    in: RoundedRectangle(cornerRadius: LHLayout.composerCorner, style: .continuous)
                 )
                 .focused($isComposerFocused)
 
@@ -68,7 +68,7 @@ struct ActivityLogView: View {
                 Task { await viewModel.sendMessage(text) }
             } label: {
                 Image(systemName: "arrow.up.circle.fill")
-                    .font(.system(size: 32))
+                    .font(.system(size: LHLayout.dockButton - 4, weight: .regular))
                     .symbolRenderingMode(.hierarchical)
                     .foregroundStyle(.tint)
             }
@@ -89,10 +89,10 @@ struct ActivityLogView: View {
                     .font(.body)
                     .foregroundStyle(isUser ? Color.white : Color.primary)
                     .padding(.horizontal, LHSpacing.sm)
-                    .padding(.vertical, LHSpacing.sm - 2)
+                    .padding(.vertical, LHSpacing.xs + 2)
                     .background(
                         isUser ? Color.accentColor : Color(.secondarySystemGroupedBackground),
-                        in: RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        in: RoundedRectangle(cornerRadius: LHLayout.bubbleCorner, style: .continuous)
                     )
                 Text(message.createdAt, style: .time)
                     .font(.caption2)

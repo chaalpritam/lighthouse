@@ -153,10 +153,7 @@ struct OnboardingView: View {
             .disabled(viewModel.isCreatingMission)
         case 3:
             HStack(spacing: LHSpacing.sm) {
-                Button("Not Now") { advance(to: 4) }
-                    .buttonStyle(.bordered)
-                    .controlSize(.large)
-                    .frame(maxWidth: .infinity)
+                SecondaryButton(title: "Not Now") { advance(to: 4) }
                 PrimaryButton(title: "Continue") { advance(to: 4) }
             }
         default:
@@ -229,7 +226,7 @@ struct OnboardingView: View {
                         .padding(.horizontal, LHSpacing.xs)
                         .padding(.vertical, LHSpacing.xxs)
                         .foregroundStyle(.tint)
-                        .background(Color.accentColor.opacity(0.12), in: Capsule())
+                        .background(LighthouseColor.softFill(), in: Capsule())
                         .frame(maxWidth: .infinity)
                 }
             }
@@ -276,14 +273,9 @@ struct OnboardingView: View {
                 }
             }
 
-            Button {
+            SecondaryButton(title: "Play voice test", systemImage: "speaker.wave.2.fill") {
                 viewModel.testVoice()
-            } label: {
-                Label("Play voice test", systemImage: "speaker.wave.2.fill")
-                    .frame(maxWidth: .infinity)
             }
-            .buttonStyle(.bordered)
-            .controlSize(.large)
         }
     }
 
@@ -315,7 +307,13 @@ struct OnboardingView: View {
 
             VStack(spacing: LHSpacing.xs) {
                 ForEach(viewModel.brainStatus.variants, id: \.self) { variant in
-                    brainOption(variant)
+                    SelectableRow(
+                        title: variant,
+                        subtitle: variant.contains("Rules") ? nil : "Shown for parity · Android only",
+                        isSelected: viewModel.brainStatus.selectedVariant == variant
+                    ) {
+                        viewModel.brainStatus.selectVariant(variant)
+                    }
                 }
             }
         }
@@ -330,38 +328,24 @@ struct OnboardingView: View {
                 subtitle: "Start from your GPS location — no mission setup required."
             )
 
-            SurfaceCard {
-                HStack(spacing: LHSpacing.sm) {
-                    Image(systemName: "location.fill")
-                        .font(.title3)
-                        .foregroundStyle(.tint)
-                        .frame(width: 36, height: 36)
-                        .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(viewModel.locationService.location?.shortLabel() ?? "Finding your location…")
-                            .font(.body.weight(.semibold))
-                        Text(viewModel.locationService.location?.countryLabel() ?? "Location updates when permitted")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                    Spacer(minLength: 0)
-                }
-            }
+            LocationCard(
+                primary: viewModel.locationService.location?.shortLabel() ?? "Finding your location…",
+                secondary: viewModel.locationService.location?.countryLabel() ?? "Location updates when permitted"
+            )
 
             DisclosureGroup(isExpanded: $showAdvanced) {
                 VStack(alignment: .leading, spacing: LHLayout.rowSpacing) {
                     SurfaceCard(padding: LHSpacing.sm) {
                         VStack(alignment: .leading, spacing: LHSpacing.sm) {
                             TextField("Mission name", text: $customName)
-                                .textFieldStyle(.roundedBorder)
+                                .lighthouseField()
                             Picker("Disaster", selection: $customType) {
                                 ForEach(disasterTypes, id: \.self) { Text($0).tag($0) }
                             }
                             .pickerStyle(.menu)
                             TextField("Location", text: $customLocation)
-                                .textFieldStyle(.roundedBorder)
-                            Button {
+                                .lighthouseField()
+                            PrimaryButton(title: "Create custom mission") {
                                 Task {
                                     await viewModel.createMission(
                                         name: customName.isEmpty ? "Custom Mission" : customName,
@@ -369,12 +353,7 @@ struct OnboardingView: View {
                                         location: customLocation.isEmpty ? "Unknown" : customLocation
                                     )
                                 }
-                            } label: {
-                                Text("Create custom mission")
-                                    .frame(maxWidth: .infinity)
                             }
-                            .buttonStyle(.borderedProminent)
-                            .controlSize(.large)
                         }
                     }
 
@@ -390,10 +369,12 @@ struct OnboardingView: View {
                         } label: {
                             SurfaceCard(padding: LHSpacing.sm) {
                                 HStack(spacing: LHSpacing.sm) {
-                                    Image(systemName: preset.icon)
-                                        .foregroundStyle(.tint)
-                                        .frame(width: 28)
-                                    VStack(alignment: .leading, spacing: 2) {
+                                    IconWell(
+                                        systemName: preset.icon,
+                                        size: LHLayout.iconWellSm,
+                                        font: .body.weight(.semibold)
+                                    )
+                                    VStack(alignment: .leading, spacing: LHSpacing.xxs) {
                                         Text(preset.label)
                                             .font(.body.weight(.semibold))
                                             .foregroundStyle(.primary)
@@ -472,41 +453,27 @@ struct OnboardingView: View {
     }
 
     private func featureCard(icon: String, title: String, detail: String) -> some View {
-        VStack(alignment: .leading, spacing: LHSpacing.sm) {
-            Image(systemName: icon)
-                .font(.title3.weight(.semibold))
-                .foregroundStyle(.tint)
-                .frame(width: 36, height: 36)
-                .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-            Text(title)
-                .font(.subheadline.weight(.semibold))
-            Text(detail)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-            Spacer(minLength: 0)
+        SurfaceCard(padding: LHSpacing.sm) {
+            VStack(alignment: .leading, spacing: LHSpacing.sm) {
+                IconWell(systemName: icon, size: LHLayout.iconWellMd, font: .title3.weight(.semibold))
+                Text(title)
+                    .font(.subheadline.weight(.semibold))
+                Text(detail)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
+            }
+            .frame(maxWidth: .infinity, minHeight: 116, alignment: .topLeading)
         }
-        .padding(LHSpacing.sm)
-        .frame(maxWidth: .infinity, minHeight: 132, alignment: .topLeading)
-        .background(
-            Color(.secondarySystemGroupedBackground),
-            in: RoundedRectangle(cornerRadius: LHLayout.cardCorner, style: .continuous)
-        )
     }
 
     private func helpCard(number: Int, icon: String, title: String, detail: String) -> some View {
         SurfaceCard(padding: LHSpacing.sm) {
             HStack(alignment: .top, spacing: LHSpacing.sm) {
-                ZStack {
-                    Circle()
-                        .fill(Color.accentColor.opacity(0.12))
-                        .frame(width: 40, height: 40)
-                    Image(systemName: icon)
-                        .font(.body.weight(.semibold))
-                        .foregroundStyle(.tint)
-                }
+                IconWell(systemName: icon, size: LHLayout.iconWellLg)
 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: LHSpacing.xxs) {
                     Text("Step \(number)")
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
@@ -532,16 +499,13 @@ struct OnboardingView: View {
     ) -> some View {
         SurfaceCard(padding: LHSpacing.sm) {
             HStack(spacing: LHSpacing.sm) {
-                Image(systemName: icon)
-                    .font(.body.weight(.semibold))
-                    .foregroundStyle(granted ? LighthouseColor.success : Color.accentColor)
-                    .frame(width: 40, height: 40)
-                    .background(
-                        (granted ? LighthouseColor.success : Color.accentColor).opacity(0.12),
-                        in: RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    )
+                IconWell(
+                    systemName: icon,
+                    size: LHLayout.iconWellLg,
+                    tint: granted ? LighthouseColor.success : .accentColor
+                )
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: LHSpacing.xxs) {
                     Text(title)
                         .font(.body.weight(.semibold))
                     Text(subtitle)
@@ -563,40 +527,6 @@ struct OnboardingView: View {
                 }
             }
         }
-    }
-
-    private func brainOption(_ variant: String) -> some View {
-        let selected = viewModel.brainStatus.selectedVariant == variant
-        return Button {
-            viewModel.brainStatus.selectVariant(variant)
-        } label: {
-            HStack(spacing: LHSpacing.sm) {
-                Image(systemName: selected ? "checkmark.circle.fill" : "circle")
-                    .font(.title3)
-                    .foregroundStyle(selected ? Color.accentColor : Color.secondary)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(variant)
-                        .font(.body.weight(.medium))
-                        .foregroundStyle(.primary)
-                    if !variant.contains("Rules") {
-                        Text("Shown for parity · Android only")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                Spacer(minLength: 0)
-            }
-            .padding(LHSpacing.sm)
-            .background(
-                Color(.secondarySystemGroupedBackground),
-                in: RoundedRectangle(cornerRadius: LHLayout.cardCorner, style: .continuous)
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: LHLayout.cardCorner, style: .continuous)
-                    .strokeBorder(selected ? Color.accentColor : .clear, lineWidth: 2)
-            }
-        }
-        .buttonStyle(.plain)
     }
 
     private func advance(to next: Int) {

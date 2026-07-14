@@ -44,7 +44,7 @@ struct PriorityBadge: View {
             .padding(.vertical, LHSpacing.xxs)
             .foregroundStyle(LighthouseColor.priority(priority))
             .background(
-                LighthouseColor.priority(priority).opacity(0.14),
+                LighthouseColor.priority(priority).opacity(LHLayout.badgeFillOpacity),
                 in: Capsule()
             )
     }
@@ -69,7 +69,7 @@ struct StatTile: View {
         .padding(LHSpacing.sm)
         .background(
             Color(.secondarySystemGroupedBackground),
-            in: RoundedRectangle(cornerRadius: LHLayout.controlCorner, style: .continuous)
+            in: RoundedRectangle(cornerRadius: LHLayout.cardCorner, style: .continuous)
         )
     }
 }
@@ -83,7 +83,7 @@ struct AgentBrainStatusBar: View {
                 .font(.body.weight(.medium))
                 .foregroundStyle(.tint)
                 .frame(width: 24, alignment: .center)
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: LHSpacing.xxs) {
                 Text(brain.mode.rawValue)
                     .font(.subheadline.weight(.semibold))
                 Text(brain.statusMessage)

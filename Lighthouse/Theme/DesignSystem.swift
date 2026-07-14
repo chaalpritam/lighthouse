@@ -17,6 +17,14 @@ enum LHLayout {
     static let rowSpacing: CGFloat = 12
     static let cardCorner: CGFloat = 12
     static let controlCorner: CGFloat = 10
+    static let bubbleCorner: CGFloat = 16
+    static let composerCorner: CGFloat = 16
+    static let iconWellSm: CGFloat = 28
+    static let iconWellMd: CGFloat = 36
+    static let iconWellLg: CGFloat = 40
+    static let dockButton: CGFloat = 36
+    static let tintFillOpacity: Double = 0.12
+    static let badgeFillOpacity: Double = 0.14
 }
 
 enum LighthouseColor {
@@ -33,6 +41,10 @@ enum LighthouseColor {
         case "medium": return medium
         default: return success
         }
+    }
+
+    static func softFill(_ color: Color = .accentColor) -> Color {
+        color.opacity(LHLayout.tintFillOpacity)
     }
 }
 

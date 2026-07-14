@@ -134,3 +134,85 @@ struct FloatingDock<Content: View>: View {
             .padding(.bottom, LHSpacing.xs)
     }
 }
+
+struct LocationCard: View {
+    let title: String?
+    let primary: String
+    let secondary: String
+    var systemImage: String = "location.fill"
+    var onRefresh: (() -> Void)? = nil
+
+    init(
+        title: String? = nil,
+        primary: String,
+        secondary: String,
+        systemImage: String = "location.fill",
+        onRefresh: (() -> Void)? = nil
+    ) {
+        self.title = title
+        self.primary = primary
+        self.secondary = secondary
+        self.systemImage = systemImage
+        self.onRefresh = onRefresh
+    }
+
+    var body: some View {
+        Group {
+            if let title {
+                SectionBlock(title: title) {
+                    card
+                }
+            } else {
+                card
+            }
+        }
+    }
+
+    private var card: some View {
+        SurfaceCard(padding: LHSpacing.sm) {
+            HStack(alignment: .center, spacing: LHSpacing.sm) {
+                IconWell(
+                    systemName: systemImage,
+                    size: LHLayout.iconWellMd,
+                    font: .body.weight(.semibold)
+                )
+                VStack(alignment: .leading, spacing: LHSpacing.xxs) {
+                    Text(primary)
+                        .font(.body.weight(.semibold))
+                    Text(secondary)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer(minLength: LHSpacing.xs)
+                if let onRefresh {
+                    Button(action: onRefresh) {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                    .accessibilityLabel("Refresh location")
+                }
+            }
+        }
+    }
+}
+
+struct PlanStepsList: View {
+    let steps: [MissionPlanStep]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: LHSpacing.xs) {
+            ForEach(Array(steps.enumerated()), id: \.offset) { index, step in
+                HStack(alignment: .top, spacing: LHSpacing.xs) {
+                    Text("\(index + 1).")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 20, alignment: .trailing)
+                    Text(step.action)
+                        .font(.subheadline)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
+    }
+}

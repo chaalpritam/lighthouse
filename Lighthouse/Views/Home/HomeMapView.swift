@@ -18,17 +18,13 @@ struct HomeMapView: View {
         NavigationStack {
             ZStack(alignment: .bottom) {
                 ScrollView {
-                    VStack(alignment: .leading, spacing: LHLayout.sectionSpacing) {
+                    ScreenScrollContent(bottomClearance: 96) {
                         locationSection
                         guidanceSection
                         mapSection
                         quickReportSection
                         nearbyIncidentsSection
-                        Color.clear.frame(height: 96)
                     }
-                    .padding(.horizontal, LHLayout.screenPadding)
-                    .padding(.top, LHSpacing.md)
-                    .padding(.bottom, LHSpacing.lg)
                 }
                 voiceDock
             }
@@ -49,39 +45,18 @@ struct HomeMapView: View {
     }
 
     private var locationSection: some View {
-        VStack(alignment: .leading, spacing: LHSpacing.xs) {
-            SectionHeaderLabel(title: "Your Location")
-            SurfaceCard {
-                HStack(alignment: .center, spacing: LHSpacing.sm) {
-                    Image(systemName: "location.fill")
-                        .foregroundStyle(.tint)
-                        .frame(width: 28)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(viewModel.locationService.location?.shortLabel() ?? "Locating…")
-                            .font(.body.weight(.semibold))
-                        if let geo = viewModel.locationService.location {
-                            Text(geo.countryLabel())
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    Spacer(minLength: LHSpacing.xs)
-                    Button {
-                        Task { await viewModel.refreshLocation() }
-                    } label: {
-                        Image(systemName: "arrow.clockwise")
-                    }
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
-                    .accessibilityLabel("Refresh location")
-                }
-            }
+        LocationCard(
+            title: "Your Location",
+            primary: viewModel.locationService.location?.shortLabel() ?? "Locating…",
+            secondary: viewModel.locationService.location?.countryLabel() ?? "Waiting for GPS",
+            systemImage: "location.fill"
+        ) {
+            Task { await viewModel.refreshLocation() }
         }
     }
 
     private var guidanceSection: some View {
-        VStack(alignment: .leading, spacing: LHSpacing.xs) {
-            SectionHeaderLabel(title: "What To Do")
+        SectionBlock(title: "What To Do") {
             SurfaceCard {
                 VStack(alignment: .leading, spacing: LHSpacing.sm) {
                     Text(viewModel.messages.last(where: { $0.role == "agent" })?.content
@@ -91,19 +66,7 @@ struct HomeMapView: View {
 
                     if !viewModel.planSteps.isEmpty {
                         Divider()
-                        VStack(alignment: .leading, spacing: LHSpacing.xs) {
-                            ForEach(Array(viewModel.planSteps.enumerated()), id: \.offset) { index, step in
-                                HStack(alignment: .top, spacing: LHSpacing.xs) {
-                                    Text("\(index + 1).")
-                                        .font(.subheadline.weight(.semibold))
-                                        .foregroundStyle(.secondary)
-                                        .frame(width: 20, alignment: .trailing)
-                                    Text(step.action)
-                                        .font(.subheadline)
-                                        .fixedSize(horizontal: false, vertical: true)
-                                }
-                            }
-                        }
+                        PlanStepsList(steps: viewModel.planSteps)
                     }
 
                     HStack(spacing: LHSpacing.xs) {
@@ -123,8 +86,7 @@ struct HomeMapView: View {
     }
 
     private var mapSection: some View {
-        VStack(alignment: .leading, spacing: LHSpacing.xs) {
-            SectionHeaderLabel(title: "Map")
+        SectionBlock(title: "Map") {
             Map(position: $cameraPosition) {
                 UserAnnotation()
                 ForEach(viewModel.incidents, id: \.id) { incident in
@@ -167,8 +129,7 @@ struct HomeMapView: View {
     }
 
     private var quickReportSection: some View {
-        VStack(alignment: .leading, spacing: LHSpacing.xs) {
-            SectionHeaderLabel(title: "Quick Report")
+        SectionBlock(title: "Quick Report") {
             FlowLayout(spacing: LHSpacing.xs) {
                 ForEach(quickReports, id: \.self) { report in
                     Button(report) {
@@ -182,45 +143,32 @@ struct HomeMapView: View {
     }
 
     private var nearbyIncidentsSection: some View {
-        VStack(alignment: .leading, spacing: LHSpacing.xs) {
-            SectionHeaderLabel(title: "Nearby Incidents")
+        SectionBlock(title: "Nearby Incidents") {
             if viewModel.incidents.isEmpty {
-                SurfaceCard {
-                    ContentUnavailableView(
-                        "No Incidents Yet",
-                        systemImage: "mappin.slash",
-                        description: Text("Reports you send will appear here.")
-                    )
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, LHSpacing.sm)
-                }
+                EmptyStateCard(
+                    title: "No Incidents Yet",
+                    systemImage: "mappin.slash",
+                    description: "Reports you send will appear here."
+                )
             } else {
                 VStack(spacing: LHLayout.rowSpacing) {
                     ForEach(Array(viewModel.incidents.prefix(5)), id: \.id) { incident in
-                        SurfaceCard(padding: LHSpacing.sm) {
-                            HStack(alignment: .top, spacing: LHSpacing.sm) {
-                                VStack(alignment: .leading, spacing: LHSpacing.xxs) {
-                                    Text("Incident #\(incident.number)")
-                                        .font(.body.weight(.semibold))
-                                    Text(incident.location)
-                                        .font(.subheadline)
-                                        .foregroundStyle(.secondary)
-                                    if let user = viewModel.locationService.location,
-                                       let lat = incident.latitude, let lon = incident.longitude {
-                                        let km = LocationResolver.distanceKm(from: user, toLat: lat, toLon: lon)
-                                        Text(String(format: "%.1f km away", km))
-                                            .font(.caption)
-                                            .foregroundStyle(.tint)
-                                    }
-                                }
-                                Spacer(minLength: LHSpacing.xs)
-                                PriorityBadge(priority: incident.priority)
-                            }
-                        }
+                        IncidentRow(
+                            incident: incident,
+                            distanceLabel: distanceLabel(for: incident)
+                        )
                     }
                 }
             }
         }
+    }
+
+    private func distanceLabel(for incident: Incident) -> String? {
+        guard let user = viewModel.locationService.location,
+              let lat = incident.latitude,
+              let lon = incident.longitude else { return nil }
+        let km = LocationResolver.distanceKm(from: user, toLat: lat, toLon: lon)
+        return String(format: "%.1f km away", km)
     }
 
     private var voiceDock: some View {
@@ -231,7 +179,7 @@ struct HomeMapView: View {
                 } label: {
                     Image(systemName: viewModel.continuousVoiceMode ? "ear.fill" : "ear")
                         .font(.body.weight(.semibold))
-                        .frame(width: 36, height: 36)
+                        .frame(width: LHLayout.dockButton, height: LHLayout.dockButton)
                 }
                 .buttonStyle(.bordered)
                 .tint(viewModel.continuousVoiceMode ? .accentColor : .secondary)
@@ -240,7 +188,7 @@ struct HomeMapView: View {
                 PhotosPicker(selection: $selectedPhoto, matching: .images) {
                     Image(systemName: "camera.fill")
                         .font(.body.weight(.semibold))
-                        .frame(width: 36, height: 36)
+                        .frame(width: LHLayout.dockButton, height: LHLayout.dockButton)
                 }
                 .buttonStyle(.bordered)
                 .accessibilityLabel("Attach photo")
@@ -269,44 +217,5 @@ struct HomeMapView: View {
                 }
             }
         }
-    }
-}
-
-/// Layout helper for wrapping chips.
-struct FlowLayout: Layout {
-    var spacing: CGFloat = 8
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        arrange(proposal: proposal, subviews: subviews).size
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        let result = arrange(proposal: proposal, subviews: subviews)
-        for (index, origin) in result.origins.enumerated() {
-            subviews[index].place(
-                at: CGPoint(x: bounds.minX + origin.x, y: bounds.minY + origin.y),
-                proposal: .unspecified
-            )
-        }
-    }
-
-    private func arrange(proposal: ProposedViewSize, subviews: Subviews) -> (size: CGSize, origins: [CGPoint]) {
-        let maxWidth = proposal.width ?? .infinity
-        var origins: [CGPoint] = []
-        var x: CGFloat = 0
-        var y: CGFloat = 0
-        var rowHeight: CGFloat = 0
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            if x + size.width > maxWidth, x > 0 {
-                x = 0
-                y += rowHeight + spacing
-                rowHeight = 0
-            }
-            origins.append(CGPoint(x: x, y: y))
-            rowHeight = max(rowHeight, size.height)
-            x += size.width + spacing
-        }
-        return (CGSize(width: maxWidth, height: y + rowHeight), origins)
     }
 }

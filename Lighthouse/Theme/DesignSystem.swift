@@ -93,6 +93,30 @@ struct PrimaryButton: View {
 
 typealias GlassPrimaryButton = PrimaryButton
 
+struct SecondaryButton: View {
+    let title: String
+    var systemImage: String? = nil
+    var tint: Color = .accentColor
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: LHSpacing.xs) {
+                if let systemImage {
+                    Image(systemName: systemImage)
+                }
+                Text(title)
+                    .fontWeight(.semibold)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 4)
+        }
+        .buttonStyle(.bordered)
+        .tint(tint)
+        .controlSize(.large)
+    }
+}
+
 struct SectionHeaderLabel: View {
     let title: String
 
@@ -102,6 +126,46 @@ struct SectionHeaderLabel: View {
             .foregroundStyle(.secondary)
             .textCase(nil)
             .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+/// Soft tinted well for SF Symbols used across cards.
+struct IconWell: View {
+    let systemName: String
+    var size: CGFloat = LHLayout.iconWellMd
+    var tint: Color = .accentColor
+    var font: Font = .body.weight(.semibold)
+
+    var body: some View {
+        Image(systemName: systemName)
+            .font(font)
+            .foregroundStyle(tint)
+            .frame(width: size, height: size)
+            .background(
+                LighthouseColor.softFill(tint),
+                in: RoundedRectangle(cornerRadius: LHLayout.controlCorner, style: .continuous)
+            )
+            .accessibilityHidden(true)
+    }
+}
+
+/// Shared text field chrome used in composers and forms.
+struct LighthouseFieldBackground: ViewModifier {
+    var cornerRadius: CGFloat = LHLayout.controlCorner
+
+    func body(content: Content) -> some View {
+        content
+            .padding(LHSpacing.sm)
+            .background(
+                Color(.tertiarySystemFill),
+                in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            )
+    }
+}
+
+extension View {
+    func lighthouseField(cornerRadius: CGFloat = LHLayout.controlCorner) -> some View {
+        modifier(LighthouseFieldBackground(cornerRadius: cornerRadius))
     }
 }
 

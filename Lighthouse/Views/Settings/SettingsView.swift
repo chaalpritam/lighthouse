@@ -10,103 +10,23 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                Section {
-                    Text(viewModel.brainStatus.ramSummary)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    ForEach(viewModel.brainStatus.variants, id: \.self) { variant in
-                        Button {
-                            viewModel.brainStatus.selectVariant(variant)
-                        } label: {
-                            HStack {
-                                Text(variant)
-                                    .foregroundStyle(.primary)
-                                Spacer()
-                                if viewModel.brainStatus.selectedVariant == variant {
-                                    Image(systemName: "checkmark")
-                                        .foregroundStyle(.tint)
-                                        .fontWeight(.semibold)
-                                }
-                            }
-                        }
+            ScrollView {
+                ScreenScrollContent {
+                    brainSection
+                    if viewModel.mission != nil {
+                        missionSection
                     }
-                    LabeledContent("Status", value: viewModel.brainStatus.statusMessage)
-                } header: {
-                    Text("Agent Brain")
-                }
-
-                if let mission = viewModel.mission {
-                    Section("Mission") {
-                        LabeledContent("Name", value: mission.name)
-                        LabeledContent("Type", value: mission.disasterType)
-                        LabeledContent("Location", value: mission.location)
-                        LabeledContent("Incidents", value: "\(viewModel.stats.incidents)")
-                        LabeledContent("Critical", value: "\(viewModel.stats.criticalIncidents)")
-                        LabeledContent("Rescued", value: "\(viewModel.stats.rescued)")
+                    if !viewModel.planSteps.isEmpty {
+                        planSection
                     }
-                }
-
-                if !viewModel.planSteps.isEmpty {
-                    Section("Current Plan") {
-                        ForEach(Array(viewModel.planSteps.enumerated()), id: \.offset) { index, step in
-                            Text("\(index + 1). \(step.action)")
-                        }
+                    peerSyncSection
+                    if !viewModel.timeline.isEmpty {
+                        timelineSection
                     }
-                }
-
-                Section {
-                    Button("Export Mission JSON") {
-                        do {
-                            exportText = try viewModel.exportMission()
-                        } catch {
-                            importError = error.localizedDescription
-                        }
-                    }
-                    if let exportText {
-                        ShareLink(
-                            item: exportText,
-                            subject: Text("Lighthouse Mission"),
-                            message: Text("Offline mission snapshot")
-                        )
-                        Text(exportText)
-                            .font(.caption.monospaced())
-                            .foregroundStyle(.secondary)
-                            .lineLimit(4)
-                    }
-                    Button("Import Mission JSON") {
-                        showImporter = true
-                    }
-                } header: {
-                    Text("Peer Sync")
-                } footer: {
-                    Text("Share a JSON snapshot with nearby devices when network is unavailable.")
-                }
-
-                if !viewModel.timeline.isEmpty {
-                    Section("Timeline") {
-                        ForEach(Array(viewModel.timeline.prefix(6)), id: \.id) { event in
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(event.title)
-                                    .font(.body)
-                                Text(event.eventDescription)
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                            }
-                            .padding(.vertical, 2)
-                        }
-                    }
-                }
-
-                Section {
-                    Button("Reset App", role: .destructive) {
-                        showResetConfirm = true
-                    }
-                } footer: {
-                    Text("Clears mission database and field captures. Model preference is kept.")
+                    resetSection
                 }
             }
-            .listStyle(.insetGrouped)
+            .background(LighthouseBackground())
             .navigationTitle("Settings")
             .toolbarTitleDisplayMode(.large)
             .fileImporter(isPresented: $showImporter, allowedContentTypes: [.json, .plainText]) { result in
@@ -136,6 +56,139 @@ struct SettingsView: View {
                 Button("OK", role: .cancel) { importError = nil }
             } message: {
                 Text(importError ?? "")
+            }
+        }
+    }
+
+    private var brainSection: some View {
+        SectionBlock(title: "Agent Brain") {
+            VStack(spacing: LHLayout.rowSpacing) {
+                SurfaceCard(padding: LHSpacing.sm) {
+                    VStack(alignment: .leading, spacing: LHSpacing.sm) {
+                        Text(viewModel.brainStatus.ramSummary)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        InfoRow(label: "Status", value: viewModel.brainStatus.statusMessage)
+                    }
+                }
+
+                VStack(spacing: LHSpacing.xs) {
+                    ForEach(viewModel.brainStatus.variants, id: \.self) { variant in
+                        SelectableRow(
+                            title: variant,
+                            subtitle: variant.contains("Rules") ? nil : "Shown for parity · Android only",
+                            isSelected: viewModel.brainStatus.selectedVariant == variant
+                        ) {
+                            viewModel.brainStatus.selectVariant(variant)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private var missionSection: some View {
+        SectionBlock(title: "Mission") {
+            SurfaceCard {
+                VStack(spacing: LHSpacing.sm) {
+                    InfoRow(label: "Name", value: viewModel.mission?.name ?? "—")
+                    Divider()
+                    InfoRow(label: "Type", value: viewModel.mission?.disasterType ?? "—")
+                    Divider()
+                    InfoRow(label: "Location", value: viewModel.mission?.location ?? "—")
+                    Divider()
+                    InfoRow(label: "Incidents", value: "\(viewModel.stats.incidents)")
+                    Divider()
+                    InfoRow(label: "Critical", value: "\(viewModel.stats.criticalIncidents)")
+                    Divider()
+                    InfoRow(label: "Rescued", value: "\(viewModel.stats.rescued)")
+                }
+            }
+        }
+    }
+
+    private var planSection: some View {
+        SectionBlock(title: "Current Plan") {
+            SurfaceCard {
+                PlanStepsList(steps: viewModel.planSteps)
+            }
+        }
+    }
+
+    private var peerSyncSection: some View {
+        SectionBlock(title: "Peer Sync") {
+            SurfaceCard {
+                VStack(alignment: .leading, spacing: LHSpacing.sm) {
+                    Text("Share a JSON snapshot with nearby devices when network is unavailable.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    SecondaryButton(title: "Export Mission JSON", systemImage: "square.and.arrow.up") {
+                        do {
+                            exportText = try viewModel.exportMission()
+                        } catch {
+                            importError = error.localizedDescription
+                        }
+                    }
+
+                    if let exportText {
+                        ShareLink(
+                            item: exportText,
+                            subject: Text("Lighthouse Mission"),
+                            message: Text("Offline mission snapshot")
+                        ) {
+                            Label("Share Snapshot", systemImage: "square.and.arrow.up.on.square")
+                                .fontWeight(.semibold)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 4)
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.large)
+
+                        Text(exportText)
+                            .font(.caption.monospaced())
+                            .foregroundStyle(.secondary)
+                            .lineLimit(4)
+                    }
+
+                    SecondaryButton(title: "Import Mission JSON", systemImage: "square.and.arrow.down") {
+                        showImporter = true
+                    }
+                }
+            }
+        }
+    }
+
+    private var timelineSection: some View {
+        SectionBlock(title: "Timeline") {
+            SurfaceCard {
+                VStack(alignment: .leading, spacing: LHSpacing.sm) {
+                    ForEach(Array(viewModel.timeline.prefix(6)), id: \.id) { event in
+                        TimelineEventRow(event: event, showsTimestamp: false)
+                        if event.id != viewModel.timeline.prefix(6).last?.id {
+                            Divider()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private var resetSection: some View {
+        SectionBlock(title: "Danger Zone") {
+            SurfaceCard {
+                VStack(alignment: .leading, spacing: LHSpacing.sm) {
+                    Text("Clears mission database and field captures. Model preference is kept.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    PrimaryButton(title: "Reset App", tint: LighthouseColor.critical) {
+                        showResetConfirm = true
+                    }
+                }
             }
         }
     }
